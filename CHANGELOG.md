@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.8 - 2026-02-20
 
 - Add `scripts/checks.sh` to run the standard test and coverage gates.
 - Add `scripts/release.sh <version>` to automate local checks plus tag-based release push steps.
