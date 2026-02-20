@@ -75,6 +75,7 @@ def test_hint_for_error_messages():
     assert "documented functions" in cli._hint_for_error("name 'a' is not defined")
     assert "derivative syntax" in cli._hint_for_error("invalid syntax", expr="d(sin(x)/dx")
     assert "matrix syntax" in cli._hint_for_error("invalid syntax", expr="Matrix([1,2],[3,4])")
+    assert "y(x)" in cli._hint_for_error("dsolve() and classify_ode() only work with functions of one variable, not y")
     assert "blocked patterns" in cli._hint_for_error("blocked token in expression")
     assert "enter a math expression" in cli._hint_for_error("empty expression")
     assert cli._hint_for_error("different error") is None

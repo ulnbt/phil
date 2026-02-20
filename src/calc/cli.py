@@ -192,6 +192,8 @@ def _hint_for_error(message: str, expr: str | None = None) -> str | None:
         if expr and ("/d" in expr or expr.strip().startswith("d")):
             return "derivative syntax: d(expr, var) or d(sin(x))/dx or df(t)/dt"
         return "use one of: x y z t pi e f and documented functions"
+    if "dsolve() and classify_ode() only work with functions of one variable" in text:
+        return "for ODEs, use function notation: y(x) and dsolve(Eq(d(y(x), x), ...), y(x))"
     if "data type not understood" in text:
         if expr and "matrix(" in expr.lower():
             return "matrix syntax: Matrix([[1,2],[3,4]])"

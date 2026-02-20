@@ -53,6 +53,13 @@ def test_cli_bad_matrix_syntax_has_specific_hint():
     assert "matrix syntax:" in proc.stderr
 
 
+def test_cli_bad_dsolve_function_notation_has_specific_hint():
+    proc = run_cli("dsolve(Eq(d(y, x), y), y)")
+    assert proc.returncode == 1
+    assert "for ODEs, use function notation" in proc.stderr
+    assert "y(x)" in proc.stderr
+
+
 def test_cli_examples_shortcut():
     proc = run_cli(":examples")
     assert proc.returncode == 0
