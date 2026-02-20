@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.3 - 2026-02-20
+
+- Improve ODE input ergonomics for homework-style notation.
+- Accept REPL inline options and `phil ...`-prefixed input lines.
+- Normalize ODE shorthand forms such as `dy/dx = y`, `y' = y`, and `y'' + y = 0`.
+- Normalize common LaTeX-style inputs including `\frac{dy}{dx}`, `$...$`, and `\sin/\cos/\ln/\sqrt`.
+- Add targeted `dsolve` function-notation hints for `y(x)` usage.
+
 ## 0.1.0 - 2026-02-20
 
 - Initial public release.

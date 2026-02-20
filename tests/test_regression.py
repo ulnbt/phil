@@ -10,6 +10,8 @@ from calc.core import evaluate
         ("d(sin(x))/dx", "cos(x)"),
         ("df(t)/dt", "Derivative(f(t), t)"),
         ("dy/dx = y", "Eq(y(x), Derivative(y(x), x))"),
+        ("y' = y", "Eq(y(x), Derivative(y(x), x))"),
+        (r"\frac{dy}{dx} = y", "Eq(y(x), Derivative(y(x), x))"),
         ("det(Matrix([[1,2],[3,4]]))", "-2"),
         ("rank(Matrix([[1,2],[2,4]]))", "1"),
         ("int(sin(x))", "-cos(x)"),

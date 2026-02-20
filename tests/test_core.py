@@ -23,6 +23,26 @@ def test_ode_shorthand_equation_normalizes():
     assert str(evaluate("dy/dx = y")) == "Eq(y(x), Derivative(y(x), x))"
 
 
+def test_ode_prime_notation_equation_normalizes():
+    assert str(evaluate("y' = y")) == "Eq(y(x), Derivative(y(x), x))"
+
+
+def test_second_order_ode_prime_notation():
+    assert str(evaluate("y'' + y = 0")) == "Eq(y(x) + Derivative(y(x), (x, 2)), 0)"
+
+
+def test_latex_leibniz_ode_equation_normalizes():
+    assert str(evaluate(r"\frac{dy}{dx} = y")) == "Eq(y(x), Derivative(y(x), x))"
+
+
+def test_latex_higher_derivative_ode_equation_normalizes():
+    assert str(evaluate(r"\frac{d^2y}{dx^2} + y = 0")) == "Eq(y(x) + Derivative(y(x), (x, 2)), 0)"
+
+
+def test_markdown_wrapped_expression():
+    assert str(evaluate("$d(x^2, x)$")) == "2*x"
+
+
 def test_derivative_infers_single_symbol():
     assert str(evaluate("d(x^3 + 2*x)")) == "3*x**2 + 2"
 
@@ -118,6 +138,12 @@ def test_blocks_newline_and_semicolon():
 def test_normalizes_ln_and_unicode_minus():
     assert str(evaluate("ln(x)")) == "log(x)"
     assert str(evaluate("2−1")) == "1"
+
+
+def test_normalizes_latex_commands():
+    assert str(evaluate(r"\sin(x)^2 + \cos(x)^2", simplify_output=False)) == "sin(x)**2 + cos(x)**2"
+    assert str(evaluate(r"\ln(x)")) == "log(x)"
+    assert str(evaluate(r"\sqrt{x}")) == "sqrt(x)"
 
 
 def test_relaxed_parses_braces_ln_and_implicit_multiplication():

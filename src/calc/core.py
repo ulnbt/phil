@@ -123,6 +123,15 @@ LEIBNIZ_SIMPLE_PATTERN = re.compile(
 ODE_SHORT_EQ_PATTERN = re.compile(
     r"^\s*d\s*([A-Za-z][A-Za-z0-9_]*)\s*/\s*d\s*([A-Za-z][A-Za-z0-9_]*)\s*=\s*(.+?)\s*$"
 )
+LATEX_LEIBNIZ_PATTERN = re.compile(
+    r"\\frac\s*\{\s*d\s*([A-Za-z][A-Za-z0-9_]*)\s*\}\s*\{\s*d\s*([A-Za-z][A-Za-z0-9_]*)\s*\}"
+)
+LATEX_HIGHER_LEIBNIZ_PATTERN = re.compile(
+    r"\\frac\s*\{\s*d\^([2-9])\s*([A-Za-z][A-Za-z0-9_]*)\s*\}\s*\{\s*d\s*([A-Za-z][A-Za-z0-9_]*)\s*\^\s*\1\s*\}"
+)
+LATEX_FRAC_PATTERN = re.compile(r"\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}")
+LATEX_SQRT_PATTERN = re.compile(r"\\sqrt\s*\{([^{}]+)\}")
+PRIME_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})")
 
 
 def _dependent_expr(dep: str, var: str) -> str:
@@ -137,6 +146,67 @@ def _replace_bare_dependent(rhs: str, dep: str, dep_expr: str) -> str:
     return re.sub(rf"\b{re.escape(dep)}\b(?!\s*\()", dep_expr, rhs)
 
 
+def _strip_outer_wrappers(text: str) -> str:
+    out = text.strip()
+    while True:
+        before = out
+        if len(out) >= 2 and out[0] == out[-1] and out[0] in {"'", '"'}:
+            out = out[1:-1].strip()
+        elif out.startswith("$$") and out.endswith("$$") and len(out) >= 4:
+            out = out[2:-2].strip()
+        elif out.startswith("$") and out.endswith("$") and len(out) >= 2:
+            out = out[1:-1].strip()
+        elif out.startswith(r"\(") and out.endswith(r"\)"):
+            out = out[2:-2].strip()
+        elif out.startswith(r"\[") and out.endswith(r"\]"):
+            out = out[2:-2].strip()
+        if out == before:
+            return out
+
+
+def _nth_derivative(dep: str, var: str, order: int) -> str:
+    out = _dependent_expr(dep, var)
+    for _ in range(order):
+        out = f"d({out}, {var})"
+    return out
+
+
+def _replace_latex_notation(text: str) -> str:
+    out = text
+    out = LATEX_HIGHER_LEIBNIZ_PATTERN.sub(
+        lambda m: _nth_derivative(m.group(2), m.group(3), int(m.group(1))),
+        out,
+    )
+    out = LATEX_LEIBNIZ_PATTERN.sub(lambda m: f"d{m.group(1)}/d{m.group(2)}", out)
+    while True:
+        updated = LATEX_FRAC_PATTERN.sub(r"(\1)/(\2)", out)
+        if updated == out:
+            break
+        out = updated
+    out = LATEX_SQRT_PATTERN.sub(r"sqrt(\1)", out)
+    out = re.sub(r"\\(sin|cos|tan|ln|log|exp)\b", r"\1", out)
+    out = re.sub(r"\\pi\b", "pi", out)
+    out = out.replace(r"\cdot", "*").replace(r"\times", "*")
+    return out
+
+
+def _replace_prime_notation(text: str) -> str:
+    return PRIME_PATTERN.sub(
+        lambda m: _nth_derivative(m.group(1), "x", len(m.group(2))),
+        text,
+    )
+
+
+def _normalize_ode_equation_dependents(text: str) -> str:
+    out = text
+    if EQUALITY_PATTERN.search(out):
+        if "d(yf(x), x)" in out:
+            out = _replace_bare_dependent(out, "y", "yf(x)")
+        if "d(f(x), x)" in out:
+            out = _replace_bare_dependent(out, "f", "f(x)")
+    return out
+
+
 def _validate_expression(expression: str) -> None:
     if not expression.strip():
         raise ValueError("empty expression")
@@ -147,9 +217,13 @@ def _validate_expression(expression: str) -> None:
 
 
 def normalize_expression(expression: str) -> str:
-    normalized = expression.replace("{", "(").replace("}", ")").replace("−", "-")
+    normalized = _strip_outer_wrappers(expression)
+    normalized = normalized.replace("−", "-")
+    normalized = _replace_latex_notation(normalized)
+    normalized = normalized.replace("{", "(").replace("}", ")")
     # Accept common math shorthand from CAS/calculator input style.
     normalized = re.sub(r"\bln\s*\(", "log(", normalized)
+    normalized = _replace_prime_notation(normalized)
     # Treat y(x) as an ODE function call while keeping y available as a symbol.
     normalized = re.sub(r"\by\s*\(", "yf(", normalized)
     ode_match = ODE_SHORT_EQ_PATTERN.match(normalized)
@@ -168,6 +242,7 @@ def normalize_expression(expression: str) -> str:
         lambda m: f"d({_dependent_expr(m.group(1), m.group(2))}, {m.group(2)})",
         normalized,
     )
+    normalized = _normalize_ode_equation_dependents(normalized)
     if EQUALITY_PATTERN.search(normalized) and not ASSIGNMENT_PATTERN.match(normalized):
         lhs, rhs = EQUALITY_PATTERN.split(normalized, maxsplit=1)
         lhs = lhs.strip()

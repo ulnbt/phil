@@ -274,6 +274,9 @@ If you get stuck, run `:examples` or `:h`.
 - relaxed mode (default) allows implicit multiplication (`2x`); use `--strict` to require `2*x`
 - `d(expr)` / `int(expr)` infer the variable when exactly one symbol is present
 - Leibniz shorthand is accepted: `d(sin(x))/dx`, `df(t)/dt`
+- ODE shorthand is accepted: `dy/dx = y`, `y' = y`, `y'' + y = 0`
+- LaTeX-style ODE shorthand is accepted: `\frac{dy}{dx} = y`, `\frac{d^2y}{dx^2} + y = 0`
+- Common LaTeX wrappers and commands are normalized: `$...$`, `\(...\)`, `\sin`, `\cos`, `\ln`, `\sqrt{...}`, `\frac{a}{b}`
 - `name = expr` assigns in REPL session (`ans` is always last result)
 - Undefined symbols raise an error
 

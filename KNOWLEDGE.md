@@ -21,7 +21,9 @@ Project-specific knowledge for contributors.
   - `d(expr, var)`
   - `d(expr)` when variable can be inferred uniquely
   - Leibniz shorthand: `d(sin(x))/dx`, `df(t)/dt`
-  - ODE shorthand equation: `dy/dx = y` (normalized to `Eq(Derivative(y(x), x), y(x))`)
+  - ODE shorthand equation: `dy/dx = y`, `y' = y`, `y'' + y = 0`
+  - LaTeX ODE shorthand: `\frac{dy}{dx} = y`, `\frac{d^2y}{dx^2} + y = 0`
+  - LaTeX wrappers/commands normalized: `$...$`, `\(...\)`, `\sin`, `\cos`, `\ln`, `\sqrt{...}`, `\frac{a}{b}`
 - Integral:
   - `int(expr, var)`
   - `int(expr)` with unique variable inference

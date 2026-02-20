@@ -60,6 +60,18 @@ def test_cli_bad_dsolve_function_notation_has_specific_hint():
     assert "y(x)" in proc.stderr
 
 
+def test_cli_accepts_prime_notation_ode():
+    proc = run_cli("y' = y")
+    assert proc.returncode == 0
+    assert "Derivative(y(x), x)" in proc.stdout
+
+
+def test_cli_accepts_latex_leibniz_ode():
+    proc = run_cli(r"\frac{dy}{dx} = y")
+    assert proc.returncode == 0
+    assert "Derivative(y(x), x)" in proc.stdout
+
+
 def test_cli_examples_shortcut():
     proc = run_cli(":examples")
     assert proc.returncode == 0
