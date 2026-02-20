@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.9 - 2026-02-20
 
 - Add human-friendly `ode ...` alias input for solving ODEs (including optional initial conditions like `y(0)=1`).
 - Improve `:ode` help text with a beginner-first readable format.
