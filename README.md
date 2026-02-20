@@ -170,6 +170,8 @@ Tagged releases are published to PyPI automatically via GitHub Actions trusted p
 git pull
 git tag -a v0.2.0 -m "Release v0.2.0"
 git push origin v0.2.0
+# or
+scripts/release.sh 0.2.0
 ```
 
 Then verify:
@@ -238,6 +240,8 @@ $ phil --format pretty 'Matrix([[1,2],[3,4]])'
 
 ```bash
 uv run --group dev pytest
+# full local quality gate
+scripts/checks.sh
 ```
 
 ## GitHub

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add `scripts/checks.sh` to run the standard test and coverage gates.
+- Add `scripts/release.sh <version>` to automate local checks plus tag-based release push steps.
+- Document scripted development/release workflow in contributor and README docs.
+
 ## 0.1.7 - 2026-02-20
 
 - Refactor CLI internals to use a dedicated diagnostics module and typed option parsing.

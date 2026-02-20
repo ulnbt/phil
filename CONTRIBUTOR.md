@@ -18,6 +18,8 @@ Run these before pushing:
 ```bash
 uv run --group dev pytest
 uv run --group dev pytest --cov=calc --cov-report=term-missing --cov-fail-under=90
+# or
+scripts/checks.sh
 ```
 
 Test categories:
@@ -69,6 +71,12 @@ Create and push a tag:
 git pull
 git tag -a v0.2.0 -m "Release v0.2.0"
 git push origin v0.2.0
+```
+
+Or use the helper script:
+
+```bash
+scripts/release.sh 0.2.0
 ```
 
 Then confirm:
