@@ -8,22 +8,35 @@ Powered by [SymPy](https://www.sympy.org/).
 
 Requires [uv](https://docs.astral.sh/uv/).
 
-Install from the project directory:
+Install from PyPI (no clone required):
+
+```bash
+uv tool install philcalc
+```
+
+Then run:
+
+```bash
+phil
+```
+
+Project links:
+
+- PyPI: https://pypi.org/project/philcalc/
+- Source: https://github.com/sacchen/phil
+
+## Local Development Install
+
+From a local clone:
 
 ```bash
 uv tool install .
-```
-
-Run without installing:
-
-```bash
-uv run phil '2+2'
 ```
 
 ## 60-Second Start
 
 ```bash
-uv tool install .
+uv tool install philcalc
 phil --help
 phil '1/3 + 1/6'
 phil '(1 - 25e^5)e^{-5t} + (25e^5 - 1)t e^{-5t} + t e^{-5t} ln(t)'
