@@ -72,6 +72,27 @@ def test_cli_accepts_latex_leibniz_ode():
     assert "Derivative(y(x), x)" in proc.stdout
 
 
+def test_cli_relaxed_sinx_shows_interpretation_hint():
+    proc = run_cli("sinx")
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "sin(x)"
+    assert "interpreted 'sinx' as 'sin(x)'" in proc.stderr
+
+
+def test_cli_explain_parse_shows_normalized_expression():
+    proc = run_cli("--explain-parse", "sinx")
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "sin(x)"
+    assert "hint: parsed as: sin(x)" in proc.stderr
+
+
+def test_cli_strict_sinx_does_not_autocorrect():
+    proc = run_cli("--strict", "sinx")
+    assert proc.returncode == 1
+    assert "name 'sinx' is not defined" in proc.stderr
+    assert "interpreted 'sinx'" not in proc.stderr
+
+
 def test_cli_examples_shortcut():
     proc = run_cli(":examples")
     assert proc.returncode == 0
@@ -181,6 +202,32 @@ def test_repl_default_relaxed_accepts_implicit_multiplication():
     )
     assert proc.returncode == 0
     assert "2*x" in proc.stdout
+
+
+def test_repl_relaxed_sinx_shows_interpretation_hint():
+    proc = subprocess.run(
+        [sys.executable, "-m", "calc"],
+        input="sinx\n:q\n",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0
+    assert "sin(x)" in proc.stdout
+    assert "interpreted 'sinx' as 'sin(x)'" in proc.stderr
+
+
+def test_repl_inline_explain_parse_shows_normalized_expression():
+    proc = subprocess.run(
+        [sys.executable, "-m", "calc"],
+        input="--explain-parse sinx\n:q\n",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0
+    assert "sin(x)" in proc.stdout
+    assert "hint: parsed as: sin(x)" in proc.stderr
 
 
 def test_repl_strict_rejects_implicit_multiplication():

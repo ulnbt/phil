@@ -160,6 +160,15 @@ def test_relaxed_parses_second_long_expression():
     assert "exp(-5*t)" in out
 
 
+def test_relaxed_interprets_sinx_shorthand():
+    assert str(evaluate("sinx", relaxed=True)) == "sin(x)"
+
+
+def test_strict_rejects_sinx_shorthand():
+    with pytest.raises(NameError, match="sinx"):
+        evaluate("sinx", relaxed=False)
+
+
 def test_dsolve_with_y_of_x_notation():
     out = str(evaluate("dsolve(Eq(d(y(x), x), y(x)), y(x))", relaxed=True))
     assert "Eq(y(x), C1*exp(x))" in out

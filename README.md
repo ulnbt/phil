@@ -58,6 +58,7 @@ Then in REPL, try:
 phil '<expression>'
 phil --format pretty '<expression>'
 phil --no-simplify '<expression>'
+phil --explain-parse '<expression>'
 phil --latex '<expression>'
 phil --latex-inline '<expression>'
 phil --latex-block '<expression>'
@@ -119,6 +120,13 @@ phil --help
 - `NO_COLOR` disables auto color.
 - `--color always` forces color even when output is not a TTY.
 
+### Clear Input/Output Mode
+
+- Use `--format pretty` for easier-to-scan rendered output.
+- Use `--explain-parse` to print `hint: parsed as: ...` on `stderr` before evaluation.
+- Combine with relaxed parsing for shorthand visibility, e.g. `phil --explain-parse 'sinx'`.
+- `stdout` stays result-only, so pipes/scripts remain predictable.
+
 ## Updates
 
 From published package (anywhere):
@@ -168,6 +176,7 @@ Then verify:
 `phil` now uses relaxed parsing by default:
 
 - `2x` works like `2*x`
+- `sinx` works like `sin(x)` (with a `hint:` notice)
 - `{}` works like `()`
 - `ln(t)` works like `log(t)`
 

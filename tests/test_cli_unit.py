@@ -19,12 +19,13 @@ def test_parse_options_unknown_raises():
 
 
 def test_parse_options_flags():
-    format_mode, relaxed, simplify_output, always_wa, copy_wa, color_mode, rest = cli._parse_options(
-        ["--latex", "--strict", "--wa", "--copy-wa", "2+2"]
+    format_mode, relaxed, simplify_output, explain_parse, always_wa, copy_wa, color_mode, rest = cli._parse_options(
+        ["--latex", "--strict", "--explain-parse", "--wa", "--copy-wa", "2+2"]
     )
     assert format_mode == "latex"
     assert relaxed is False
     assert simplify_output is True
+    assert explain_parse is True
     assert always_wa is True
     assert copy_wa is True
     assert color_mode == "auto"
@@ -39,7 +40,7 @@ def test_parse_options_latex_modes():
 
 
 def test_parse_options_format_and_no_simplify():
-    format_mode, _, simplify_output, _, _, _, rest = cli._parse_options(
+    format_mode, _, simplify_output, _, _, _, _, rest = cli._parse_options(
         ["--format", "pretty", "--no-simplify", "2+2"]
     )
     assert format_mode == "pretty"
@@ -48,9 +49,9 @@ def test_parse_options_format_and_no_simplify():
 
 
 def test_parse_options_double_dash_and_single_dash_literal():
-    _, _, _, _, _, _, rest = cli._parse_options(["--", "--not-an-option"])
+    _, _, _, _, _, _, _, rest = cli._parse_options(["--", "--not-an-option"])
     assert rest == ["--not-an-option"]
-    _, _, _, _, _, _, rest = cli._parse_options(["-1"])
+    _, _, _, _, _, _, _, rest = cli._parse_options(["-1"])
     assert rest == ["-1"]
 
 
@@ -68,6 +69,12 @@ def test_parse_options_color_mode_errors():
         cli._parse_options(["--color"])
     with pytest.raises(ValueError, match="unknown color mode"):
         cli._parse_options(["--color", "nope"])
+
+
+def test_print_parse_explanation(capsys):
+    cli._print_parse_explanation("sinx", relaxed=True, enabled=True, color_mode="never")
+    err = capsys.readouterr().err
+    assert "parsed as: sin(x)" in err
 
 
 def test_hint_for_error_messages():

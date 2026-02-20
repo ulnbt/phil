@@ -14,7 +14,7 @@ from urllib.request import urlopen
 
 from sympy import latex as to_latex
 
-from .core import evaluate
+from .core import evaluate, normalize_expression, relaxed_function_rewrites
 
 PACKAGE_NAME = "philcalc"
 CLI_NAME = "phil"
@@ -34,7 +34,7 @@ HELP_TEXT = (
     f"{CLI_NAME} v{VERSION} - symbolic CLI calculator\n"
     "\n"
     "usage:\n"
-    f"  {CLI_NAME} [--format MODE] [--latex|--latex-inline|--latex-block] [--strict] [--no-simplify] [--wa] [--copy-wa] [--color MODE] '<expression>'\n"
+    f"  {CLI_NAME} [--format MODE] [--latex|--latex-inline|--latex-block] [--strict] [--no-simplify] [--explain-parse] [--wa] [--copy-wa] [--color MODE] '<expression>'\n"
     f"  {CLI_NAME}\n"
     f"  {CLI_NAME} :examples\n"
     "\n"
@@ -45,6 +45,7 @@ HELP_TEXT = (
     "  --latex-block   print LaTeX wrapped as $$...$$\n"
     "  --strict        disable relaxed input parsing\n"
     "  --no-simplify   skip simplify() on parsed expressions\n"
+    "  --explain-parse show normalized expression on stderr\n"
     "  --wa            always print WolframAlpha equivalent link\n"
     "  --copy-wa       copy WolframAlpha link to clipboard when shown\n"
     "  --color MODE    diagnostics color: auto, always, never\n"
@@ -217,6 +218,35 @@ def _print_error(exc: Exception, expr: str | None = None, color_mode: str = "aut
         _print_wolfram_hint(expr, color_mode=color_mode)
 
 
+def _print_relaxed_rewrite_hints(expr: str, relaxed: bool, color_mode: str) -> None:
+    if not relaxed:
+        return
+    seen: set[tuple[str, str]] = set()
+    for original, rewritten in relaxed_function_rewrites(expr):
+        if (original, rewritten) in seen:
+            continue
+        seen.add((original, rewritten))
+        print(
+            _style(
+                f"hint: interpreted '{original}' as '{rewritten}'",
+                color="yellow",
+                stream=sys.stderr,
+                color_mode=color_mode,
+            ),
+            file=sys.stderr,
+        )
+
+
+def _print_parse_explanation(expr: str, relaxed: bool, enabled: bool, color_mode: str) -> None:
+    if not enabled:
+        return
+    normalized = normalize_expression(expr, relaxed=relaxed)
+    print(
+        _style(f"hint: parsed as: {normalized}", color="yellow", stream=sys.stderr, color_mode=color_mode),
+        file=sys.stderr,
+    )
+
+
 def _hint_for_error(message: str, expr: str | None = None) -> str | None:
     text = message.lower()
     if "unexpected eof" in text:
@@ -314,10 +344,11 @@ def _print_update_status() -> None:
     print(f"update with: {UPDATE_CMD}")
 
 
-def _parse_options(args: list[str]) -> tuple[str, bool, bool, bool, bool, str, list[str]]:
+def _parse_options(args: list[str]) -> tuple[str, bool, bool, bool, bool, bool, str, list[str]]:
     format_mode = "plain"
     relaxed = True
     simplify_output = True
+    explain_parse = False
     always_wa = False
     copy_wa = False
     color_mode = "auto"
@@ -363,6 +394,10 @@ def _parse_options(args: list[str]) -> tuple[str, bool, bool, bool, bool, str, l
             simplify_output = False
             idx += 1
             continue
+        if arg == "--explain-parse":
+            explain_parse = True
+            idx += 1
+            continue
         if arg == "--wa":
             always_wa = True
             idx += 1
@@ -393,7 +428,7 @@ def _parse_options(args: list[str]) -> tuple[str, bool, bool, bool, bool, str, l
         if arg.startswith("--"):
             raise ValueError(f"unknown option: {arg}")
         break
-    return format_mode, relaxed, simplify_output, always_wa, copy_wa, color_mode, args[idx:]
+    return format_mode, relaxed, simplify_output, explain_parse, always_wa, copy_wa, color_mode, args[idx:]
 
 
 def _handle_repl_command(expr: str, color_mode: str = "auto") -> bool:
@@ -484,7 +519,7 @@ def run(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
 
     try:
-        format_mode, relaxed, simplify_output, always_wa, copy_wa, color_mode, remaining = _parse_options(args)
+        format_mode, relaxed, simplify_output, explain_parse, always_wa, copy_wa, color_mode, remaining = _parse_options(args)
     except SystemExit:
         return 0
     except Exception as exc:
@@ -509,6 +544,8 @@ def run(argv: list[str] | None = None) -> int:
             _print_update_status()
             return 0
         try:
+            _print_relaxed_rewrite_hints(expr, relaxed, color_mode)
+            _print_parse_explanation(expr, relaxed, explain_parse, color_mode)
             print(
                 _format_result(
                     evaluate(expr, relaxed=relaxed, simplify_output=simplify_output),
@@ -528,6 +565,7 @@ def run(argv: list[str] | None = None) -> int:
     repl_format_mode = format_mode
     repl_relaxed = relaxed
     repl_simplify_output = simplify_output
+    repl_explain_parse = explain_parse
     repl_always_wa = always_wa
     repl_copy_wa = copy_wa
     repl_color_mode = color_mode
@@ -548,6 +586,7 @@ def run(argv: list[str] | None = None) -> int:
                     repl_format_mode,
                     repl_relaxed,
                     repl_simplify_output,
+                    repl_explain_parse,
                     repl_always_wa,
                     repl_copy_wa,
                     repl_color_mode,
@@ -557,6 +596,8 @@ def run(argv: list[str] | None = None) -> int:
                     print("hint: REPL options updated for this session", file=sys.stderr)
                     continue
                 expr = " ".join(remaining)
+            _print_relaxed_rewrite_hints(expr, repl_relaxed, repl_color_mode)
+            _print_parse_explanation(expr, repl_relaxed, repl_explain_parse, repl_color_mode)
             print(
                 _format_result(
                     evaluate(

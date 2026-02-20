@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5 - 2026-02-20
+
+- Relaxed parsing now accepts shorthand trig input like `sinx`/`cosx`/`tanx` as `sin(x)`/`cos(x)`/`tan(x)`.
+- CLI and REPL print an explicit `hint:` notice when shorthand is auto-interpreted.
+- Add `--explain-parse` to show normalized input as a `hint:` on `stderr`.
+
 ## 0.1.4 - 2026-02-20
 
 - Add in-app guided tour commands (`:tutorial`, `:tour`, `:next`, `:repeat`, `:done`).

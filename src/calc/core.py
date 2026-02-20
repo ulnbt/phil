@@ -132,6 +132,7 @@ LATEX_HIGHER_LEIBNIZ_PATTERN = re.compile(
 LATEX_FRAC_PATTERN = re.compile(r"\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}")
 LATEX_SQRT_PATTERN = re.compile(r"\\sqrt\s*\{([^{}]+)\}")
 PRIME_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})")
+BARE_FUNC_ARG_PATTERN = re.compile(r"\b(sin|cos|tan)([xyzt])\b")
 
 
 def _dependent_expr(dep: str, var: str) -> str:
@@ -197,6 +198,32 @@ def _replace_prime_notation(text: str) -> str:
     )
 
 
+def _normalize_bare_function_shorthand(text: str, *, relaxed: bool) -> tuple[str, list[tuple[str, str]]]:
+    if not relaxed:
+        return text, []
+
+    rewrites: list[tuple[str, str]] = []
+
+    def repl(match: re.Match[str]) -> str:
+        original = match.group(0)
+        rewritten = f"{match.group(1)}({match.group(2)})"
+        rewrites.append((original, rewritten))
+        return rewritten
+
+    normalized = BARE_FUNC_ARG_PATTERN.sub(repl, text)
+    return normalized, rewrites
+
+
+def relaxed_function_rewrites(expression: str) -> list[tuple[str, str]]:
+    normalized = _strip_outer_wrappers(expression)
+    normalized = normalized.replace("−", "-")
+    normalized = _replace_latex_notation(normalized)
+    normalized = normalized.replace("{", "(").replace("}", ")")
+    normalized = re.sub(r"\bln\s*\(", "log(", normalized)
+    _, rewrites = _normalize_bare_function_shorthand(normalized, relaxed=True)
+    return rewrites
+
+
 def _normalize_ode_equation_dependents(text: str) -> str:
     out = text
     if EQUALITY_PATTERN.search(out):
@@ -216,13 +243,14 @@ def _validate_expression(expression: str) -> None:
         raise ValueError("blocked token in expression")
 
 
-def normalize_expression(expression: str) -> str:
+def normalize_expression(expression: str, relaxed: bool = False) -> str:
     normalized = _strip_outer_wrappers(expression)
     normalized = normalized.replace("−", "-")
     normalized = _replace_latex_notation(normalized)
     normalized = normalized.replace("{", "(").replace("}", ")")
     # Accept common math shorthand from CAS/calculator input style.
     normalized = re.sub(r"\bln\s*\(", "log(", normalized)
+    normalized, _ = _normalize_bare_function_shorthand(normalized, relaxed=relaxed)
     normalized = _replace_prime_notation(normalized)
     # Treat y(x) as an ODE function call while keeping y available as a symbol.
     normalized = re.sub(r"\by\s*\(", "yf(", normalized)
@@ -267,7 +295,7 @@ def evaluate(
     simplify_output: bool = True,
 ):
     _validate_expression(expression)
-    normalized = normalize_expression(expression)
+    normalized = normalize_expression(expression, relaxed=relaxed)
     transforms = RELAXED_TRANSFORMS if relaxed else TRANSFORMS
     local_dict = dict(LOCALS_DICT)
     if session_locals:
