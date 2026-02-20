@@ -1,55 +1,68 @@
 # Contributor Guide
 
-This project is intentionally small. Changes should make `calc` clearer, safer, or more accurate without expanding feature scope.
+This project is a terminal-first symbolic calculator (`phil`) built on SymPy.
+Changes should improve correctness, safety, and practical UX for math workflows.
 
-## Principles
-
-- Keep the CLI fast to understand.
-- Prefer explicit math operations over magic behavior.
-- Treat parser security as a first-class requirement.
-- Add tests for every behavior change.
-
-## Local Development
+## Development Setup
 
 ```bash
 uv run --group dev pytest
-uv run calc '2+2'
-uv run calc
+uv run phil '2+2'
+uv run phil
 ```
 
-## How to Add a New Operation (Educational Workflow)
+## Testing Strategy (Required)
 
-1. Add the SymPy function import in `src/calc/core.py`.
-2. Add the user-facing name in `LOCALS_DICT` in `src/calc/core.py`.
-3. Add at least one evaluator test in `tests/test_core.py`.
-4. Add one README example if it is user-facing.
-5. Run the test suite.
+Run these before pushing:
 
-Example pattern:
+```bash
+uv run --group dev pytest
+uv run --group dev pytest --cov=calc --cov-report=term-missing --cov-fail-under=90
+```
 
-- Internal function: `sympy.sinh`
-- User API entry: `"sinh": sinh`
-- Test: `assert str(evaluate("sinh(0)")) == "0"`
+Test categories:
+
+- `unit`: pure behavior of parser/evaluator/format helpers.
+- `integration`: process-level CLI/REPL behavior.
+- `regression`: fixed bug cases that must never regress.
+
+Property tests (`hypothesis`) are used for high-value invariants in numeric/symbolic behavior.
+
+## CI Expectations
+
+CI runs:
+
+- tests + coverage on Python `3.12` and `3.13`
+- install smoke test (`uv tool install .`, then run `phil`)
+
+If your change adds behavior, add/adjust tests in the correct category.
+
+## Adding or Changing Math Operations
+
+1. Add required import(s) in `src/calc/core.py`.
+2. Expose user-facing entry in `LOCALS_DICT`.
+3. Add tests in `tests/test_core.py` (and regression tests if bug-fix related).
+4. Update `README.md` and `KNOWLEDGE.md` if user-visible.
+5. Run full suite.
 
 ## Safety Rules
 
-- Do not loosen `GLOBAL_DICT` restrictions in `src/calc/core.py`.
-- Do not permit dunder tokens (`__`) or command separators in expressions.
-- Keep input-size limits unless there is a measured need to adjust them.
+- Do not loosen parser globals in `GLOBAL_DICT`.
+- Keep blocked-token and input-size protections unless there is a measured reason.
+- Never execute user input outside SymPy parse/eval path.
 
 ## UX Rules
 
-- Preserve terminal-first, low-noise output.
-- Keep errors short (`E:` prefix) and actionable (`hint:` line when helpful).
-- Keep REPL commands minimal (`:h`, `:examples`, `:q`).
+- Output remains terminal-first and script-friendly.
+- Errors are concise: `E:` + actionable `hint:`.
+- Keep REPL behavior consistent with one-shot mode (`--strict`, `--format`, `--no-simplify`).
 
 ## Scope Guardrails
 
-Avoid adding:
+Avoid unnecessary complexity:
 
-- Plugin systems
-- Persistent state
-- Auto-completion frameworks
-- Large config surface areas
+- plugin systems
+- unrelated persistence layers
+- large configuration frameworks
 
-If a feature adds complexity, include a clear reason and benchmark/impact in the PR message.
+When adding complexity, explain the user value and testing impact in the PR.
