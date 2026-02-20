@@ -22,7 +22,7 @@ src/calc/core.py    ← parser and evaluator
 src/calc/cli.py     ← command-line interface
 tests/test_core.py
 tests/test_cli.py
-calc                ← local launcher script (uv run --project)
+phil                ← local launcher script (uv run --project)
 CONTRIBUTOR.md      ← contribution and extension guide
 ```
 
@@ -31,7 +31,7 @@ CONTRIBUTOR.md      ← contribution and extension guide
 This project is a standard `uv` package:
 
 - `pyproject.toml` declares metadata and dependencies.
-- `[project.scripts]` exposes the `calc` command.
+- `[project.scripts]` exposes the `phil` command.
 - Tests run via `uv run --group dev pytest`.
 
 ## Parsing model
@@ -59,7 +59,7 @@ By default, CLI evaluation uses relaxed parsing (`implicit_multiplication_applic
 
 ## REPL UX
 
-- Prompt is `calc>`.
+- Prompt is `phil>`.
 - Minimal command mode inspired by terminal-first tools:
   - `:h` or `:help` shows available commands
   - `:examples` shows a compact learning set

@@ -1,4 +1,4 @@
-# calc
+# phil
 
 A minimal command-line calculator for exact arithmetic, symbolic differentiation, integration, algebraic equation solving, and ordinary differential equations.
 
@@ -17,17 +17,17 @@ uv tool install .
 Run without installing:
 
 ```bash
-uv run calc '2+2'
+uv run phil '2+2'
 ```
 
 ## 60-Second Start
 
 ```bash
 uv tool install .
-calc --help
-calc '1/3 + 1/6'
-calc '(1 - 25e^5)e^{-5t} + (25e^5 - 1)t e^{-5t} + t e^{-5t} ln(t)'
-calc
+phil --help
+phil '1/3 + 1/6'
+phil '(1 - 25e^5)e^{-5t} + (25e^5 - 1)t e^{-5t} + t e^{-5t} ln(t)'
+phil
 ```
 
 Then in REPL, try:
@@ -41,18 +41,18 @@ Then in REPL, try:
 ### One-shot
 
 ```bash
-calc '<expression>'
-calc --latex '<expression>'
-calc --wa '<expression>'
-calc --wa --copy-wa '<expression>'
-calc :examples
+phil '<expression>'
+phil --latex '<expression>'
+phil --wa '<expression>'
+phil --wa --copy-wa '<expression>'
+phil :examples
 ```
 
 ### Interactive
 
 ```bash
-calc
-calc> <expression>
+phil
+phil> <expression>
 ```
 
 REPL commands:
@@ -71,7 +71,7 @@ Complex expressions also print a WolframAlpha equivalent hint after successful e
 ### Help
 
 ```bash
-calc --help
+phil --help
 ```
 
 ### Wolfram helper
@@ -86,7 +86,7 @@ calc --help
 From published package (anywhere):
 
 ```bash
-uv tool upgrade calc-cli
+uv tool upgrade phil
 ```
 
 From a local clone of this repo:
@@ -98,9 +98,9 @@ uv tool install --force --reinstall --refresh .
 Quick check in CLI:
 
 ```bash
-calc :version
-calc :update
-calc :check
+phil :version
+phil :update
+phil :check
 ```
 
 In REPL:
@@ -112,7 +112,7 @@ For release notifications on GitHub, use "Watch" -> "Custom" -> "Releases only" 
 
 ### Long Expressions (easier input)
 
-`calc` now uses relaxed parsing by default:
+`phil` now uses relaxed parsing by default:
 
 - `2x` works like `2*x`
 - `{}` works like `()`
@@ -121,35 +121,35 @@ For release notifications on GitHub, use "Watch" -> "Custom" -> "Releases only" 
 So inputs like these work directly:
 
 ```bash
-calc '(1 - 25e^5)e^{-5t} + (25e^5 - 1)t e^{-5t} + t e^{-5t} ln(t)'
-calc '(854/2197)e^{8t}+(1343/2197)e^{-5t}+((9/26)t^2 -(9/169)t)e^{8t}'
+phil '(1 - 25e^5)e^{-5t} + (25e^5 - 1)t e^{-5t} + t e^{-5t} ln(t)'
+phil '(854/2197)e^{8t}+(1343/2197)e^{-5t}+((9/26)t^2 -(9/169)t)e^{8t}'
 ```
 
 Use strict parsing if needed:
 
 ```bash
-calc --strict '2*x'
+phil --strict '2*x'
 ```
 
 ## Examples
 
 ```bash
-$ calc '1/3 + 1/6'
+$ phil '1/3 + 1/6'
 1/2
 
-$ calc 'd(x^3 + 2*x, x)'
+$ phil 'd(x^3 + 2*x, x)'
 3*x**2 + 2
 
-$ calc 'int(sin(x), x)'
+$ phil 'int(sin(x), x)'
 -cos(x)
 
-$ calc 'solve(x^2 - 4, x)'
+$ phil 'solve(x^2 - 4, x)'
 [-2, 2]
 
-$ calc 'N(pi, 30)'
+$ phil 'N(pi, 30)'
 3.14159265358979323846264338328
 
-$ calc --latex 'd(x^2, x)'
+$ phil --latex 'd(x^2, x)'
 2 x
 ```
 

@@ -14,8 +14,9 @@ from sympy import latex as to_latex
 
 from .core import evaluate
 
-PACKAGE_NAME = "calc-cli"
-UPDATE_CMD = "uv tool upgrade calc-cli"
+PACKAGE_NAME = "phil"
+CLI_NAME = "phil"
+UPDATE_CMD = "uv tool upgrade phil"
 
 
 def _calc_version() -> str:
@@ -26,14 +27,14 @@ def _calc_version() -> str:
 
 
 VERSION = _calc_version()
-PROMPT = "calc> "
+PROMPT = f"{CLI_NAME}> "
 HELP_TEXT = (
-    f"calc v{VERSION} - symbolic CLI calculator\n"
+    f"{CLI_NAME} v{VERSION} - symbolic CLI calculator\n"
     "\n"
     "usage:\n"
-    "  calc [--latex] [--strict] [--wa] [--copy-wa] '<expression>'\n"
-    "  calc\n"
-    "  calc :examples\n"
+    f"  {CLI_NAME} [--latex] [--strict] [--wa] [--copy-wa] '<expression>'\n"
+    f"  {CLI_NAME}\n"
+    f"  {CLI_NAME} :examples\n"
     "\n"
     "options:\n"
     "  --latex         print result as LaTeX\n"
@@ -220,7 +221,7 @@ def _handle_repl_command(expr: str) -> bool:
         print(EXAMPLES_TEXT)
         return True
     if expr in {":v", ":version"}:
-        print(f"calc v{VERSION}")
+        print(f"{CLI_NAME} v{VERSION}")
         return True
     if expr in {":update", ":check"}:
         _print_update_status()
@@ -249,7 +250,7 @@ def run(argv: list[str] | None = None) -> int:
             print(EXAMPLES_TEXT)
             return 0
         if expr in {":v", ":version"}:
-            print(f"calc v{VERSION}")
+            print(f"{CLI_NAME} v{VERSION}")
             return 0
         if expr in {":update", ":check"}:
             _print_update_status()
@@ -263,8 +264,8 @@ def run(argv: list[str] | None = None) -> int:
             _print_error(exc, expr)
             return 1
 
-    print(f"calc v{VERSION} REPL. :h help, :q quit, Ctrl-D exit.")
-    print("update: uv tool upgrade calc-cli")
+    print(f"{CLI_NAME} v{VERSION} REPL. :h help, :q quit, Ctrl-D exit.")
+    print(f"update: {UPDATE_CMD}")
     while True:
         try:
             expr = input(PROMPT).strip()

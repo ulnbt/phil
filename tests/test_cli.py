@@ -31,7 +31,7 @@ def test_cli_help_flag():
     proc = run_cli("--help")
     assert proc.returncode == 0
     assert "usage:" in proc.stdout
-    assert "calc v" in proc.stdout
+    assert "phil v" in proc.stdout
     assert ":examples" in proc.stdout
 
 
@@ -56,7 +56,7 @@ def test_repl_help_and_quit():
         check=False,
     )
     assert proc.returncode == 0
-    assert "calc v" in proc.stdout
+    assert "phil v" in proc.stdout
     assert ":h help" in proc.stdout
     assert "repl commands:" in proc.stdout
 
@@ -134,14 +134,14 @@ def test_cli_force_wolfram_hint():
 def test_cli_version_shortcut():
     proc = run_cli(":version")
     assert proc.returncode == 0
-    assert "calc v" in proc.stdout
+    assert "phil v" in proc.stdout
 
 
 def test_cli_update_shortcut():
     proc = run_cli(":update")
     assert proc.returncode == 0
     assert "current version:" in proc.stdout
-    assert "uv tool upgrade calc-cli" in proc.stdout
+    assert "uv tool upgrade phil" in proc.stdout
 
 
 def test_cli_check_shortcut():

@@ -199,7 +199,7 @@ def test_run_shortcut_commands(monkeypatch, capsys):
     assert cli.run([":update"]) == 0
     out = capsys.readouterr().out
     assert "examples:" in out
-    assert "calc v" in out
+    assert "phil v" in out
     assert "status" in out
 
 

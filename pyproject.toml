@@ -1,5 +1,5 @@
 [project]
-name = "calc-cli"
+name = "phil"
 version = "0.1.0"
 description = "Minimal symbolic CLI calculator powered by SymPy"
 readme = "README.md"
@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [project.scripts]
-calc = "calc.cli:run"
+phil = "calc.cli:run"
 
 [dependency-groups]
 dev = [
