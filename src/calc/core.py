@@ -9,16 +9,19 @@ from sympy import (
     Float,
     Function,
     Integer,
+    Matrix,
     N,
     Rational,
     Symbol,
     cos,
     diff,
     dsolve,
+    eye,
     exp,
     factorial,
     integrate,
     log,
+    ones,
     pi,
     simplify,
     sin,
@@ -26,6 +29,7 @@ from sympy import (
     sqrt,
     symbols,
     tan,
+    zeros,
 )
 from sympy.parsing.sympy_parser import (
     auto_number,
@@ -80,6 +84,14 @@ LOCALS_DICT = {
     "log": log,
     "sqrt": sqrt,
     "abs": Abs,
+    "Matrix": Matrix,
+    "eye": eye,
+    "zeros": zeros,
+    "ones": ones,
+    "det": lambda matrix: matrix.det(),
+    "inv": lambda matrix: matrix.inv(),
+    "rank": lambda matrix: matrix.rank(),
+    "eigvals": lambda matrix: matrix.eigenvals(),
 }
 
 # parse_expr internally uses eval. Keep globals minimal and disable builtins.
@@ -101,6 +113,7 @@ RELAXED_TRANSFORMS = (
 )
 MAX_EXPRESSION_CHARS = 2000
 BLOCKED_PATTERN = re.compile(r"(__|;|\n|\r)")
+ASSIGNMENT_PATTERN = re.compile(r"^\s*([A-Za-z][A-Za-z0-9_]*)\s*=\s*(.+)\s*$")
 
 
 def _validate_expression(expression: str) -> None:
@@ -116,20 +129,67 @@ def normalize_expression(expression: str) -> str:
     normalized = expression.replace("{", "(").replace("}", ")").replace("−", "-")
     # Accept common math shorthand from CAS/calculator input style.
     normalized = re.sub(r"\bln\s*\(", "log(", normalized)
+    # Support Leibniz-style shorthand: d(expr)/dvar -> d(expr, var)
+    normalized = re.sub(
+        r"\bd\s*\((.+?)\)\s*/\s*d\s*([A-Za-z][A-Za-z0-9_]*)\b",
+        r"d(\1, \2)",
+        normalized,
+    )
+    normalized = re.sub(
+        r"\bd\s*([A-Za-z][A-Za-z0-9_]*(?:\([^()]*\))?)\s*/\s*d\s*([A-Za-z][A-Za-z0-9_]*)\b",
+        r"d(\1, \2)",
+        normalized,
+    )
     return normalized
 
 
-def evaluate(expression: str, relaxed: bool = False):
+def _evaluate_parsed(parsed, simplify_output: bool):
+    if isinstance(parsed, (list, tuple, dict)):
+        return parsed
+    if simplify_output:
+        return simplify(parsed)
+    return parsed
+
+
+def evaluate(
+    expression: str,
+    relaxed: bool = False,
+    session_locals: dict | None = None,
+    simplify_output: bool = True,
+):
     _validate_expression(expression)
     normalized = normalize_expression(expression)
     transforms = RELAXED_TRANSFORMS if relaxed else TRANSFORMS
+    local_dict = dict(LOCALS_DICT)
+    if session_locals:
+        local_dict.update(session_locals)
+
+    match = ASSIGNMENT_PATTERN.match(normalized)
+    if match:
+        name, rhs = match.group(1), match.group(2)
+        if name in LOCALS_DICT:
+            raise ValueError(f"cannot assign reserved name: {name}")
+        parsed_rhs = parse_expr(
+            rhs,
+            local_dict=local_dict,
+            global_dict=GLOBAL_DICT,
+            transformations=transforms,
+            evaluate=True,
+        )
+        result = _evaluate_parsed(parsed_rhs, simplify_output=simplify_output)
+        if session_locals is not None:
+            session_locals[name] = result
+            session_locals["ans"] = result
+        return result
+
     parsed = parse_expr(
         normalized,
-        local_dict=LOCALS_DICT,
+        local_dict=local_dict,
         global_dict=GLOBAL_DICT,
         transformations=transforms,
         evaluate=True,
     )
-    if isinstance(parsed, (list, tuple, dict)):
-        return parsed
-    return simplify(parsed)
+    result = _evaluate_parsed(parsed, simplify_output=simplify_output)
+    if session_locals is not None:
+        session_locals["ans"] = result
+    return result

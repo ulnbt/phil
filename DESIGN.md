@@ -48,8 +48,11 @@ This significantly reduces parser attack surface for CLI usage. It is still not 
 
 By default, CLI evaluation uses relaxed parsing (`implicit_multiplication_application`) to make long calculator-style expressions easier to enter.
 `--strict` disables relaxed parsing in both one-shot and REPL modes.
+`--no-simplify` skips the simplify step for large or structure-sensitive expressions.
 
 `d(expr)` and `int(expr)` can infer the variable only when the expression has exactly one free symbol. Ambiguous or symbol-free expressions must pass the variable explicitly.
+REPL evaluation supports session locals, assignment (`name = expr`), and `ans` for last result.
+Matrix helpers are exposed in the allowed namespace (`Matrix`, `eye`, `zeros`, `ones`, `det`, `inv`, `rank`, `eigvals`).
 
 ## Exit-code behavior
 
@@ -71,7 +74,8 @@ By default, CLI evaluation uses relaxed parsing (`implicit_multiplication_applic
 - Evaluation failures include a WolframAlpha URL hint for optional browser lookup.
 - Complex successful expressions also show a WolframAlpha equivalent hint.
 - `--wa` forces hints for all expressions; `--copy-wa` attempts clipboard copy.
-- Optional LaTeX output via `--latex`.
+- Optional LaTeX output via `--latex`, `--latex-inline`, or `--latex-block`.
+- Optional output formats via `--format` (`plain`, `pretty`, `latex`, `latex-inline`, `latex-block`).
 
 ## Startup time
 

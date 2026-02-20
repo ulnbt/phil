@@ -42,7 +42,11 @@ Then in REPL, try:
 
 ```bash
 phil '<expression>'
+phil --format pretty '<expression>'
+phil --no-simplify '<expression>'
 phil --latex '<expression>'
+phil --latex-inline '<expression>'
+phil --latex-block '<expression>'
 phil --wa '<expression>'
 phil --wa --copy-wa '<expression>'
 phil :examples
@@ -67,6 +71,7 @@ The REPL starts with a short hint line and prints targeted `hint:` messages on c
 Unknown `:` commands return a short correction hint.
 Evaluation errors also include: `hint: try WolframAlpha: <url>`.
 Complex expressions also print a WolframAlpha equivalent hint after successful evaluation.
+REPL sessions also keep `ans` (last result) and support assignment such as `A = Matrix([[1,2],[3,4]])`.
 
 ### Help
 
@@ -77,9 +82,10 @@ phil --help
 ### Wolfram helper
 
 - By default, complex expressions print a WolframAlpha equivalent link.
+- Links are printed as full URLs for terminal auto-linking (including iTerm2).
 - Use `--wa` to always print the link.
 - Use `--copy-wa` to copy the link to your clipboard when shown.
-- In supported terminals, the link label is clickable.
+- Full URLs are usually clickable directly in modern terminals.
 
 ## Updates
 
@@ -151,6 +157,18 @@ $ phil 'N(pi, 30)'
 
 $ phil --latex 'd(x^2, x)'
 2 x
+
+$ phil --latex-inline 'd(x^2, x)'
+$2 x$
+
+$ phil --latex-block 'd(x^2, x)'
+$$
+2 x
+$$
+
+$ phil --format pretty 'Matrix([[1,2],[3,4]])'
+[1  2]
+[3  4]
 ```
 
 ## Test
@@ -190,6 +208,10 @@ If you get stuck, run `:examples` or `:h`.
 | Solve ODE | `dsolve(Eq(...), func)` |
 | Equation | `Eq(lhs, rhs)` |
 | Numeric eval | `N(expr, digits)` |
+| Matrix determinant | `det(Matrix([[...]]))` |
+| Matrix inverse | `inv(Matrix([[...]]))` |
+| Matrix rank | `rank(Matrix([[...]]))` |
+| Matrix eigenvalues | `eigvals(Matrix([[...]]))` |
 
 ### Symbols
 
@@ -199,12 +221,18 @@ If you get stuck, run `:examples` or `:h`.
 
 `sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `abs`
 
+### Matrix helpers
+
+`Matrix`, `eye`, `zeros`, `ones`, `det`, `inv`, `rank`, `eigvals`
+
 ### Syntax notes
 
 - `^` is exponentiation (`x^2`)
 - `!` is factorial (`5!`)
 - relaxed mode (default) allows implicit multiplication (`2x`); use `--strict` to require `2*x`
 - `d(expr)` / `int(expr)` infer the variable when exactly one symbol is present
+- Leibniz shorthand is accepted: `d(sin(x))/dx`, `df(t)/dt`
+- `name = expr` assigns in REPL session (`ans` is always last result)
 - Undefined symbols raise an error
 
 ## Safety limits

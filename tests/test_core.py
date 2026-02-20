@@ -11,6 +11,14 @@ def test_derivative():
     assert str(evaluate("d(x^3 + 2*x, x)")) == "3*x**2 + 2"
 
 
+def test_derivative_leibniz_shorthand():
+    assert str(evaluate("d(sin(x))/dx")) == "cos(x)"
+
+
+def test_derivative_leibniz_with_function():
+    assert str(evaluate("df(t)/dt")) == "Derivative(f(t), t)"
+
+
 def test_derivative_infers_single_symbol():
     assert str(evaluate("d(x^3 + 2*x)")) == "3*x**2 + 2"
 
@@ -49,6 +57,30 @@ def test_solve():
 
 def test_numeric_eval():
     assert str(evaluate("N(pi, 10)")) == "3.141592654"
+
+
+def test_matrix_helpers():
+    assert str(evaluate("det(Matrix([[1,2],[3,4]]))")) == "-2"
+    assert str(evaluate("rank(Matrix([[1,2],[2,4]]))")) == "1"
+
+
+def test_assignment_and_ans_with_session_locals():
+    session = {}
+    assert str(evaluate("a = x^2 + 1", session_locals=session)) == "x**2 + 1"
+    assert "a" in session
+    assert str(evaluate("d(a)", session_locals=session)) == "2*x"
+    assert str(evaluate("ans + 3", session_locals=session)) == "2*x + 3"
+
+
+def test_assignment_rejects_reserved_name():
+    with pytest.raises(ValueError, match="reserved name"):
+        evaluate("sin = 2", session_locals={})
+
+
+def test_no_simplify_mode():
+    out = str(evaluate("sin(x)^2 + cos(x)^2", simplify_output=False))
+    assert "sin(x)**2" in out
+    assert "cos(x)**2" in out
 
 
 def test_blocks_import_injection():

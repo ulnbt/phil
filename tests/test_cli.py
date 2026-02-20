@@ -41,6 +41,18 @@ def test_cli_unknown_option_exit_code():
     assert "unknown option" in proc.stderr
 
 
+def test_cli_bad_derivative_syntax_has_specific_hint():
+    proc = run_cli("d(sin(x)/dx")
+    assert proc.returncode == 1
+    assert "derivative syntax:" in proc.stderr
+
+
+def test_cli_bad_matrix_syntax_has_specific_hint():
+    proc = run_cli("Matrix([1,2],[3,4])")
+    assert proc.returncode == 1
+    assert "matrix syntax:" in proc.stderr
+
+
 def test_cli_examples_shortcut():
     proc = run_cli(":examples")
     assert proc.returncode == 0
@@ -117,6 +129,37 @@ def test_cli_latex_output():
     assert proc.stdout.strip() == "2 x"
 
 
+def test_cli_latex_inline_output():
+    proc = run_cli("--latex-inline", "d(x^2, x)")
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "$2 x$"
+
+
+def test_cli_latex_block_output():
+    proc = run_cli("--latex-block", "d(x^2, x)")
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "$$\n2 x\n$$"
+
+
+def test_cli_pretty_output():
+    proc = run_cli("--format", "pretty", "Matrix([[1,2],[3,4]])")
+    assert proc.returncode == 0
+    assert "1  2" in proc.stdout
+    assert "3  4" in proc.stdout
+
+
+def test_cli_no_simplify():
+    proc = run_cli("--no-simplify", "sin(x)^2 + cos(x)^2")
+    assert proc.returncode == 0
+    assert "sin(x)**2 + cos(x)**2" in proc.stdout
+
+
+def test_cli_unknown_format_mode():
+    proc = run_cli("--format", "wat", "2+2")
+    assert proc.returncode == 1
+    assert "unknown format mode" in proc.stderr
+
+
 def test_cli_relaxed_long_expression():
     proc = run_cli("(854/2197)e^{8t}+(1343/2197)e^{-5t}+((9/26)t^2 -(9/169)t)e^{8t}")
     assert proc.returncode == 0
@@ -149,3 +192,17 @@ def test_cli_check_shortcut():
     assert proc.returncode == 0
     assert "current version:" in proc.stdout
     assert "update with:" in proc.stdout
+
+
+def test_repl_assignment_and_ans():
+    proc = subprocess.run(
+        [sys.executable, "-m", "calc"],
+        input="A = Matrix([[1,2],[3,4]])\ndet(A)\nans+1\n:q\n",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0
+    assert "Matrix([[1, 2], [3, 4]])" in proc.stdout
+    assert "phil> -2" in proc.stdout
+    assert "phil> -1" in proc.stdout

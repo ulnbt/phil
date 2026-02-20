@@ -19,26 +19,45 @@ def test_parse_options_unknown_raises():
 
 
 def test_parse_options_flags():
-    latex_output, relaxed, always_wa, copy_wa, rest = cli._parse_options(
+    format_mode, relaxed, simplify_output, always_wa, copy_wa, rest = cli._parse_options(
         ["--latex", "--strict", "--wa", "--copy-wa", "2+2"]
     )
-    assert latex_output is True
+    assert format_mode == "latex"
     assert relaxed is False
+    assert simplify_output is True
     assert always_wa is True
     assert copy_wa is True
     assert rest == ["2+2"]
 
 
+def test_parse_options_latex_modes():
+    format_mode, *_ = cli._parse_options(["--latex-inline", "x"])
+    assert format_mode == "latex-inline"
+    format_mode, *_ = cli._parse_options(["--latex-block", "x"])
+    assert format_mode == "latex-block"
+
+
+def test_parse_options_format_and_no_simplify():
+    format_mode, _, simplify_output, _, _, rest = cli._parse_options(
+        ["--format", "pretty", "--no-simplify", "2+2"]
+    )
+    assert format_mode == "pretty"
+    assert simplify_output is False
+    assert rest == ["2+2"]
+
+
 def test_parse_options_double_dash_and_single_dash_literal():
-    _, _, _, _, rest = cli._parse_options(["--", "--not-an-option"])
+    _, _, _, _, _, rest = cli._parse_options(["--", "--not-an-option"])
     assert rest == ["--not-an-option"]
-    _, _, _, _, rest = cli._parse_options(["-1"])
+    _, _, _, _, _, rest = cli._parse_options(["-1"])
     assert rest == ["-1"]
 
 
 def test_hint_for_error_messages():
     assert "missing closing" in cli._hint_for_error("Unexpected EOF while parsing")
     assert "documented functions" in cli._hint_for_error("name 'a' is not defined")
+    assert "derivative syntax" in cli._hint_for_error("invalid syntax", expr="d(sin(x)/dx")
+    assert "matrix syntax" in cli._hint_for_error("invalid syntax", expr="Matrix([1,2],[3,4])")
     assert "blocked patterns" in cli._hint_for_error("blocked token in expression")
     assert "enter a math expression" in cli._hint_for_error("empty expression")
     assert cli._hint_for_error("different error") is None
@@ -51,8 +70,17 @@ def test_is_complex_expression_heuristics():
 
 
 def test_format_result_latex():
-    assert cli._format_result("x", latex_output=False) == "x"
-    assert cli._format_result(2, latex_output=True) == "2"
+    assert cli._format_result("x", format_mode="plain") == "x"
+    assert cli._format_result(2, format_mode="latex") == "2"
+    assert cli._format_result(2, format_mode="latex-inline") == "$2$"
+    assert cli._format_result(2, format_mode="latex-block") == "$$\n2\n$$"
+
+
+def test_format_result_pretty():
+    from sympy import Matrix
+
+    out = cli._format_result(Matrix([[1, 2], [3, 4]]), format_mode="pretty")
+    assert "1  2" in out
 
 
 def test_format_clickable_link_tty(monkeypatch):
@@ -148,7 +176,7 @@ def test_calc_version_package_missing(monkeypatch):
 
 
 def test_run_one_shot_success(monkeypatch, capsys):
-    monkeypatch.setattr(cli, "evaluate", lambda expr, relaxed: 4)
+    monkeypatch.setattr(cli, "evaluate", lambda expr, **kwargs: 4)
     rc = cli.run(["2+2"])
     captured = capsys.readouterr()
     assert rc == 0
@@ -156,7 +184,7 @@ def test_run_one_shot_success(monkeypatch, capsys):
 
 
 def test_run_one_shot_error(monkeypatch, capsys):
-    def boom(expr, relaxed):
+    def boom(expr, **kwargs):
         raise ValueError("empty expression")
 
     monkeypatch.setattr(cli, "evaluate", boom)
@@ -173,8 +201,8 @@ def test_run_repl_uses_strict_flag(monkeypatch, capsys):
 
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
 
-    def fake_eval(expr, relaxed):
-        calls.append(relaxed)
+    def fake_eval(expr, **kwargs):
+        calls.append(kwargs.get("relaxed"))
         return "ok"
 
     monkeypatch.setattr(cli, "evaluate", fake_eval)
@@ -204,7 +232,7 @@ def test_run_shortcut_commands(monkeypatch, capsys):
 
 
 def test_run_one_shot_prints_wa_when_forced(monkeypatch, capsys):
-    monkeypatch.setattr(cli, "evaluate", lambda expr, relaxed: 4)
+    monkeypatch.setattr(cli, "evaluate", lambda expr, **kwargs: 4)
     monkeypatch.setattr(cli, "_print_wolfram_hint", lambda expr, copy_link=False: print("WA", file=cli.sys.stderr))
     rc = cli.run(["--wa", "2+2"])
     err = capsys.readouterr().err
@@ -225,7 +253,7 @@ def test_run_repl_error_path(monkeypatch, capsys):
     inputs = iter(["2+2", ":q"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
 
-    def boom(expr, relaxed):
+    def boom(expr, **kwargs):
         raise ValueError("empty expression")
 
     monkeypatch.setattr(cli, "evaluate", boom)

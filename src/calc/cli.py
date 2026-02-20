@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -32,13 +33,17 @@ HELP_TEXT = (
     f"{CLI_NAME} v{VERSION} - symbolic CLI calculator\n"
     "\n"
     "usage:\n"
-    f"  {CLI_NAME} [--latex] [--strict] [--wa] [--copy-wa] '<expression>'\n"
+    f"  {CLI_NAME} [--format MODE] [--latex|--latex-inline|--latex-block] [--strict] [--no-simplify] [--wa] [--copy-wa] '<expression>'\n"
     f"  {CLI_NAME}\n"
     f"  {CLI_NAME} :examples\n"
     "\n"
     "options:\n"
-    "  --latex         print result as LaTeX\n"
+    "  --format MODE   output mode: plain, pretty, latex, latex-inline, latex-block\n"
+    "  --latex         print raw LaTeX (no delimiters)\n"
+    "  --latex-inline  print LaTeX wrapped as $...$\n"
+    "  --latex-block   print LaTeX wrapped as $$...$$\n"
     "  --strict        disable relaxed input parsing\n"
+    "  --no-simplify   skip simplify() on parsed expressions\n"
     "  --wa            always print WolframAlpha equivalent link\n"
     "  --copy-wa       copy WolframAlpha link to clipboard when shown\n"
     "\n"
@@ -110,8 +115,8 @@ def _copy_to_clipboard(text: str) -> bool:
 
 def _print_wolfram_hint(expr: str, copy_link: bool = False) -> None:
     url = _wolframalpha_url(expr)
-    clickable = _format_clickable_link(url, url)
-    print(f"hint: try WolframAlpha: {clickable}", file=sys.stderr)
+    # Always print raw URL for maximum terminal compatibility (e.g., iTerm2 auto-linking).
+    print(f"hint: try WolframAlpha: {url}", file=sys.stderr)
     if copy_link:
         if _copy_to_clipboard(url):
             print("hint: WolframAlpha link copied to clipboard", file=sys.stderr)
@@ -121,19 +126,34 @@ def _print_wolfram_hint(expr: str, copy_link: bool = False) -> None:
 
 def _print_error(exc: Exception, expr: str | None = None) -> None:
     print(f"E: {exc}", file=sys.stderr)
-    hint = _hint_for_error(str(exc))
+    hint = _hint_for_error(str(exc), expr=expr)
     if hint:
         print(f"hint: {hint}", file=sys.stderr)
     if expr:
         _print_wolfram_hint(expr)
 
 
-def _hint_for_error(message: str) -> str | None:
+def _hint_for_error(message: str, expr: str | None = None) -> str | None:
     text = message.lower()
     if "unexpected eof" in text:
+        if expr and ("/d" in expr or expr.strip().startswith("d(")):
+            return "derivative syntax: d(expr, var) or d(sin(x))/dx or df(t)/dt"
         return "check missing closing ')' or unmatched quote"
+    if "invalid syntax" in text:
+        if expr:
+            compact = re.sub(r"\s+", "", expr)
+            if "d(" in compact or re.search(r"\bd[A-Za-z0-9_]+/d[A-Za-z0-9_]+\b", compact):
+                return "derivative syntax: d(expr, var) or d(sin(x))/dx or df(t)/dt"
+            if "matrix(" in compact.lower():
+                return "matrix syntax: Matrix([[1,2],[3,4]])"
+        return "check commas and brackets; try :examples for working patterns"
     if "name '" in text and "is not defined" in text:
+        if expr and ("/d" in expr or expr.strip().startswith("d")):
+            return "derivative syntax: d(expr, var) or d(sin(x))/dx or df(t)/dt"
         return "use one of: x y z t pi e f and documented functions"
+    if "data type not understood" in text:
+        if expr and "matrix(" in expr.lower():
+            return "matrix syntax: Matrix([[1,2],[3,4]])"
     if "blocked token" in text:
         return "remove blocked patterns like '__', ';', or newlines"
     if "empty expression" in text:
@@ -141,10 +161,19 @@ def _hint_for_error(message: str) -> str | None:
     return None
 
 
-def _format_result(value, latex_output: bool) -> str:
-    if not latex_output:
+def _format_result(value, format_mode: str) -> str:
+    if format_mode == "plain":
         return str(value)
-    return to_latex(value)
+    if format_mode == "pretty":
+        from sympy import pretty as to_pretty
+
+        return to_pretty(value)
+    rendered = to_latex(value)
+    if format_mode == "latex-inline":
+        return f"${rendered}$"
+    if format_mode == "latex-block":
+        return f"$$\n{rendered}\n$$"
+    return rendered
 
 
 def _latest_pypi_version() -> str | None:
@@ -175,9 +204,10 @@ def _print_update_status() -> None:
     print(f"update with: {UPDATE_CMD}")
 
 
-def _parse_options(args: list[str]) -> tuple[bool, bool, bool, bool, list[str]]:
-    latex_output = False
+def _parse_options(args: list[str]) -> tuple[str, bool, bool, bool, bool, list[str]]:
+    format_mode = "plain"
     relaxed = True
+    simplify_output = True
     always_wa = False
     copy_wa = False
     idx = 0
@@ -186,12 +216,40 @@ def _parse_options(args: list[str]) -> tuple[bool, bool, bool, bool, list[str]]:
         if arg in {"-h", "--help"}:
             print(HELP_TEXT)
             raise SystemExit(0)
+        if arg == "--format":
+            if idx + 1 >= len(args):
+                raise ValueError("missing value for --format")
+            mode = args[idx + 1]
+            if mode not in {"plain", "pretty", "latex", "latex-inline", "latex-block"}:
+                raise ValueError(f"unknown format mode: {mode}")
+            format_mode = mode
+            idx += 2
+            continue
+        if arg.startswith("--format="):
+            mode = arg.split("=", 1)[1]
+            if mode not in {"plain", "pretty", "latex", "latex-inline", "latex-block"}:
+                raise ValueError(f"unknown format mode: {mode}")
+            format_mode = mode
+            idx += 1
+            continue
         if arg == "--latex":
-            latex_output = True
+            format_mode = "latex"
+            idx += 1
+            continue
+        if arg == "--latex-inline":
+            format_mode = "latex-inline"
+            idx += 1
+            continue
+        if arg == "--latex-block":
+            format_mode = "latex-block"
             idx += 1
             continue
         if arg == "--strict":
             relaxed = False
+            idx += 1
+            continue
+        if arg == "--no-simplify":
+            simplify_output = False
             idx += 1
             continue
         if arg == "--wa":
@@ -208,7 +266,7 @@ def _parse_options(args: list[str]) -> tuple[bool, bool, bool, bool, list[str]]:
         if arg.startswith("--"):
             raise ValueError(f"unknown option: {arg}")
         break
-    return latex_output, relaxed, always_wa, copy_wa, args[idx:]
+    return format_mode, relaxed, simplify_output, always_wa, copy_wa, args[idx:]
 
 
 def _handle_repl_command(expr: str) -> bool:
@@ -237,7 +295,7 @@ def run(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
 
     try:
-        latex_output, relaxed, always_wa, copy_wa, remaining = _parse_options(args)
+        format_mode, relaxed, simplify_output, always_wa, copy_wa, remaining = _parse_options(args)
     except SystemExit:
         return 0
     except Exception as exc:
@@ -256,7 +314,12 @@ def run(argv: list[str] | None = None) -> int:
             _print_update_status()
             return 0
         try:
-            print(_format_result(evaluate(expr, relaxed=relaxed), latex_output))
+            print(
+                _format_result(
+                    evaluate(expr, relaxed=relaxed, simplify_output=simplify_output),
+                    format_mode,
+                )
+            )
             if always_wa or _is_complex_expression(expr):
                 _print_wolfram_hint(expr, copy_link=copy_wa)
             return 0
@@ -266,6 +329,7 @@ def run(argv: list[str] | None = None) -> int:
 
     print(f"{CLI_NAME} v{VERSION} REPL. :h help, :q quit, Ctrl-D exit.")
     print(f"update: {UPDATE_CMD}")
+    session_locals: dict = {}
     while True:
         try:
             expr = input(PROMPT).strip()
@@ -273,7 +337,17 @@ def run(argv: list[str] | None = None) -> int:
                 continue
             if _handle_repl_command(expr):
                 continue
-            print(_format_result(evaluate(expr, relaxed=relaxed), latex_output))
+            print(
+                _format_result(
+                    evaluate(
+                        expr,
+                        relaxed=relaxed,
+                        session_locals=session_locals,
+                        simplify_output=simplify_output,
+                    ),
+                    format_mode,
+                )
+            )
             if always_wa or _is_complex_expression(expr):
                 _print_wolfram_hint(expr, copy_link=copy_wa)
         except (EOFError, KeyboardInterrupt):
