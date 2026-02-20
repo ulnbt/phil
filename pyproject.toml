@@ -1,6 +1,6 @@
 [project]
-name = "phil"
-version = "0.1.0"
+name = "philcalc"
+dynamic = ["version"]
 description = "Minimal symbolic CLI calculator powered by SymPy"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -18,8 +18,15 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling>=1.24.0"]
+requires = ["hatchling>=1.24.0", "hatch-vcs>=0.4.0"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+version_scheme = "guess-next-dev"
+local_scheme = "node-and-date"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/calc"]

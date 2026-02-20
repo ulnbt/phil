@@ -14,9 +14,9 @@ from sympy import latex as to_latex
 
 from .core import evaluate
 
-PACKAGE_NAME = "phil"
+PACKAGE_NAME = "philcalc"
 CLI_NAME = "phil"
-UPDATE_CMD = "uv tool upgrade phil"
+UPDATE_CMD = "uv tool upgrade philcalc"
 
 
 def _calc_version() -> str:

@@ -123,8 +123,7 @@ wheels = [
 ]
 
 [[package]]
-name = "phil"
-version = "0.1.0"
+name = "philcalc"
 source = { editable = "." }
 dependencies = [
     { name = "sympy" },

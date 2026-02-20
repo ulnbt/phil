@@ -86,7 +86,7 @@ phil --help
 From published package (anywhere):
 
 ```bash
-uv tool upgrade phil
+uv tool upgrade philcalc
 ```
 
 From a local clone of this repo:
