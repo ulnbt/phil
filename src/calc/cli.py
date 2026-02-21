@@ -382,6 +382,8 @@ def _parse_linalg_keyed_literals(text: str, required_keys: set[str]) -> dict[str
     idx = 0
     parsed: dict[str, str] = {}
     while idx < len(text):
+        while idx < len(text) and text[idx] in {",", " "}:
+            idx += 1
         while idx < len(text) and text[idx].isspace():
             idx += 1
         if idx >= len(text):

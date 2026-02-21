@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.11 - 2026-02-21
+
+- Add matrix workflow helpers: `msolve(A, b)`, `rref(...)`, `nullspace(...)`, and `linsolve(...)`.
+- Enable function-exponent parsing with SymPy transform support (for example `sin^2(x)`).
+- Add `:linalg` / `:la` command with linear algebra quick-reference templates.
+- Expand examples/tutorial/docs to highlight linear-system and exact symbolic workflows.
+
+## 0.1.10 - 2026-02-21
+
+- Add progressive help aliases (`?`, `??`, `???`) in one-shot mode and REPL for feature discovery.
+- Expand help/tutorial/example text with an exact huge-integer arithmetic demo (`10^100000 + 1 - 10^100000`).
+- Update contributor-facing docs to reflect the new discoverability flow.
+
 ## 0.1.9 - 2026-02-20
 
 - Add human-friendly `ode ...` alias input for solving ODEs (including optional initial conditions like `y(0)=1`).

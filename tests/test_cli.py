@@ -293,10 +293,28 @@ def test_cli_linalg_alias_solve():
     assert "Matrix([[1/5], [3/5]])" in proc.stdout
 
 
+def test_cli_linalg_alias_solve_with_comma_separators():
+    proc = run_cli("linalg solve A=[[2,1],[1,3]], b=[1,2]")
+    assert proc.returncode == 0
+    assert "Matrix([[1/5], [3/5]])" in proc.stdout
+
+
 def test_cli_linalg_alias_rref():
     proc = run_cli("linalg rref A=[[1,2],[2,4]]")
     assert proc.returncode == 0
     assert "(0,)" in proc.stdout
+
+
+def test_cli_linalg_alias_rref_with_trailing_comma():
+    proc = run_cli("linalg rref A=[[1,2],[2,4]],")
+    assert proc.returncode == 0
+    assert "(0,)" in proc.stdout
+
+
+def test_cli_linalg_alias_rejects_malformed_comma_separators():
+    proc = run_cli("linalg solve A,=[[2,1],[1,3]] b=[1,2]")
+    assert proc.returncode == 1
+    assert "must use '='" in proc.stderr
 
 
 def test_repl_help_and_quit():

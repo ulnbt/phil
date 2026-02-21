@@ -21,6 +21,7 @@ from sympy import (
     exp,
     factorial,
     integrate,
+    linsolve,
     log,
     ones,
     pi,
@@ -36,6 +37,7 @@ from sympy.parsing.sympy_parser import (
     auto_number,
     convert_xor,
     factorial_notation,
+    function_exponentiation,
     implicit_multiplication_application,
     parse_expr,
 )
@@ -64,6 +66,7 @@ def _int(expr, var=None):
     if var is None:
         var = _infer_variable(expr, "int(expr)")
     return integrate(expr, var)
+
 
 LOCALS_DICT = {
     "x": x,
@@ -95,6 +98,10 @@ LOCALS_DICT = {
     "inv": lambda matrix: matrix.inv(),
     "rank": lambda matrix: matrix.rank(),
     "eigvals": lambda matrix: matrix.eigenvals(),
+    "rref": lambda matrix: matrix.rref(),
+    "nullspace": lambda matrix: matrix.nullspace(),
+    "msolve": lambda matrix, rhs: matrix.LUsolve(rhs),
+    "linsolve": linsolve,
 }
 
 # parse_expr internally uses eval. Keep globals minimal and disable builtins.
@@ -107,11 +114,12 @@ GLOBAL_DICT = {
     "factorial": factorial,
 }
 
-TRANSFORMS = (auto_number, factorial_notation, convert_xor)
+TRANSFORMS = (auto_number, factorial_notation, convert_xor, function_exponentiation)
 RELAXED_TRANSFORMS = (
     auto_number,
     factorial_notation,
     convert_xor,
+    function_exponentiation,
     implicit_multiplication_application,
 )
 MAX_EXPRESSION_CHARS = 2000
@@ -199,7 +207,9 @@ def _replace_prime_notation(text: str) -> str:
     )
 
 
-def _normalize_bare_function_shorthand(text: str, *, relaxed: bool) -> tuple[str, list[tuple[str, str]]]:
+def _normalize_bare_function_shorthand(
+    text: str, *, relaxed: bool
+) -> tuple[str, list[tuple[str, str]]]:
     if not relaxed:
         return text, []
 
@@ -225,10 +235,14 @@ def relaxed_function_rewrites(expression: str) -> list[tuple[str, str]]:
     return rewrites
 
 
-def reserved_name_suggestion(name: str, session_locals: dict | None = None) -> str | None:
+def reserved_name_suggestion(
+    name: str, session_locals: dict | None = None
+) -> str | None:
     if not session_locals:
         return None
-    prefix_matches = sorted(k for k in session_locals if k.startswith(name) and k != name)
+    prefix_matches = sorted(
+        k for k in session_locals if k.startswith(name) and k != name
+    )
     if prefix_matches:
         return prefix_matches[0]
     matches = get_close_matches(name, list(session_locals.keys()), n=1, cutoff=0.75)

@@ -31,3 +31,4 @@ def test_hint_for_error_additional_branches():
     )
     assert "derivative syntax" in diagnostics.hint_for_error("name 'a' is not defined", expr="d(a)")
     assert diagnostics.hint_for_error("data type not understood", expr="Matrix([1,2],[3,4])") == "matrix syntax: Matrix([[1,2],[3,4]])"
+    assert "linalg syntax" in diagnostics.hint_for_error("unknown linalg subcommand")

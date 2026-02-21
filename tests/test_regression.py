@@ -14,6 +14,8 @@ from calc.core import evaluate
         (r"\frac{dy}{dx} = y", "Eq(y(x), Derivative(y(x), x))"),
         ("det(Matrix([[1,2],[3,4]]))", "-2"),
         ("rank(Matrix([[1,2],[2,4]]))", "1"),
+        ("msolve(Matrix([[2,1],[1,3]]), Matrix([1,2]))", "Matrix([[1/5], [3/5]])"),
+        ("sin^2(x) + cos^2(x)", "1"),
         ("int(sin(x))", "-cos(x)"),
     ],
 )

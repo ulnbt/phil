@@ -21,6 +21,7 @@ Run these one by one:
 
 ```bash
 phil '1/3 + 1/6'
+phil '10^100000 + 1 - 10^100000'
 phil 'd(x^3 + 2*x, x)'
 phil 'int(sin(x), x)'
 phil 'solve(x^2 - 4, x)'
@@ -29,6 +30,7 @@ phil 'solve(x^2 - 4, x)'
 Expected shape:
 
 - fraction result (`1/2`)
+- exact huge-integer identity result (`1`)
 - derivative expression (`3*x**2 + 2`)
 - integral expression (`-cos(x)`)
 - roots list (`[-2, 2]`)
@@ -47,6 +49,7 @@ Now type exactly:
 phil> d(x^2, x)
 phil> A = Matrix([[1,2],[3,4]])
 phil> det(A)
+phil> msolve(Matrix([[2,1],[1,3]]), Matrix([1,2]))
 phil> ans + 1
 ```
 
@@ -55,7 +58,8 @@ You should see:
 - derivative output
 - stored matrix echo
 - determinant (`-2`)
-- use of `ans` (`-1`)
+- solved linear system (`Matrix([[1/5], [3/5]])`)
+- use of `ans` (`Matrix([[6/5], [8/5]])`)
 
 Exit with:
 
@@ -127,6 +131,9 @@ In REPL:
 
 ```text
 phil> :h
+phil> ?
+phil> ??
+phil> ???
 phil> :examples
 ```
 

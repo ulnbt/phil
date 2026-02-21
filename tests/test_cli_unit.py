@@ -166,9 +166,31 @@ def test_evaluate_linalg_alias_solve_success():
     assert parsed == "msolve(Matrix([[2,1],[1,3]]), Matrix([1,2]))"
 
 
+def test_evaluate_linalg_alias_solve_success_with_commas():
+    value, parsed = cli._evaluate_linalg_alias(
+        "linalg solve A=[[2,1],[1,3]], b=[1,2]",
+        relaxed=True,
+        simplify_output=True,
+        session_locals={},
+    )
+    assert str(value) == "Matrix([[1/5], [3/5]])"
+    assert parsed == "msolve(Matrix([[2,1],[1,3]]), Matrix([1,2]))"
+
+
 def test_evaluate_linalg_alias_rref_success():
     value, parsed = cli._evaluate_linalg_alias(
         "linalg rref A=[[1,2],[2,4]]",
+        relaxed=True,
+        simplify_output=True,
+        session_locals={},
+    )
+    assert str(value).endswith(", (0,))")
+    assert parsed == "rref(Matrix([[1,2],[2,4]]))"
+
+
+def test_evaluate_linalg_alias_rref_success_with_trailing_comma():
+    value, parsed = cli._evaluate_linalg_alias(
+        "linalg rref A=[[1,2],[2,4]],",
         relaxed=True,
         simplify_output=True,
         session_locals={},
@@ -198,6 +220,8 @@ def test_evaluate_linalg_alias_errors():
         cli._evaluate_linalg_alias("linalg solve A [[1,0],[0,1]] b=[1,2]", relaxed=True, simplify_output=True, session_locals={})
     with pytest.raises(ValueError, match="unclosed bracket literal"):
         cli._evaluate_linalg_alias("linalg solve A=[[1,0],[0,1] b=[1,2]", relaxed=True, simplify_output=True, session_locals={})
+    with pytest.raises(ValueError, match="must use '='"):
+        cli._evaluate_linalg_alias("linalg solve A,=[[1,0],[0,1]] b=[1,2]", relaxed=True, simplify_output=True, session_locals={})
 
 
 def test_evaluate_linalg_alias_rref_rejects_non_matrix(monkeypatch):

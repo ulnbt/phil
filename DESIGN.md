@@ -53,7 +53,7 @@ By default, CLI evaluation uses relaxed parsing (`implicit_multiplication_applic
 
 `d(expr)` and `int(expr)` can infer the variable only when the expression has exactly one free symbol. Ambiguous or symbol-free expressions must pass the variable explicitly.
 REPL evaluation supports session locals, assignment (`name = expr`), and `ans` for last result.
-Matrix helpers are exposed in the allowed namespace (`Matrix`, `eye`, `zeros`, `ones`, `det`, `inv`, `rank`, `eigvals`).
+Matrix helpers are exposed in the allowed namespace (`Matrix`, `eye`, `zeros`, `ones`, `det`, `inv`, `rank`, `eigvals`, `rref`, `nullspace`, `msolve`, `linsolve`).
 
 ## Exit-code behavior
 
@@ -66,9 +66,11 @@ Matrix helpers are exposed in the allowed namespace (`Matrix`, `eye`, `zeros`, `
 - Prompt is `phil>`.
 - Minimal command mode inspired by terminal-first tools:
   - `:h` or `:help` shows available commands
+  - `?`, `??`, `???` provide progressive help and demo discoverability
   - `:examples` shows a compact learning set
   - `:tutorial` / `:tour` starts a guided walkthrough (`:next`, `:repeat`, `:done`)
   - `:ode` prints ODE-specific templates and `dsolve` patterns
+  - `:linalg` / `:la` prints linear-algebra templates and matrix solve patterns
   - `:version` shows installed version
   - interactive startup prints automatic update status
   - `:update` / `:check` compare current vs latest version and print upgrade command

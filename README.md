@@ -4,6 +4,14 @@ A minimal command-line calculator for exact arithmetic, symbolic differentiation
 
 Powered by [SymPy](https://www.sympy.org/).
 
+## Positioning and Philosophy
+
+- `phil` is built to be the first-stop calculator for quick terminal math, homework, and symbolic workflows.
+- It aims to be the fastest practical choice before opening WolframAlpha, Google, Python REPL, or Calculator84.
+- It is not trying to replace Desmos for graphing-first workflows.
+- Priorities: speed, correctness, and discoverability.
+- Input should be forgiving: when `phil` makes an assumption, it should make that interpretation visible to the user.
+
 ## Install
 
 Requires [uv](https://docs.astral.sh/uv/).
@@ -40,6 +48,7 @@ uv tool install .
 uv tool install philcalc
 phil --help
 phil '1/3 + 1/6'
+phil '10^100000 + 1 - 10^100000'
 phil '(1 - 25e^5)e^{-5t} + (25e^5 - 1)t e^{-5t} + t e^{-5t} ln(t)'
 phil
 ```
@@ -49,6 +58,7 @@ Then in REPL, try:
 1. `d(x^3 + 2*x, x)`
 2. `int(sin(x), x)`
 3. `solve(x^2 - 4, x)`
+4. `msolve(Matrix([[2,1],[1,3]]), Matrix([1,2]))`
 
 ## Usage
 
@@ -70,11 +80,14 @@ phil --color always '<expression>'
 phil --color never '<expression>'
 phil "ode y' = y"
 phil "ode y' = y, y(0)=1"
+phil "linalg solve A=[[2,1],[1,3]] b=[1,2]"
+phil "linalg rref A=[[1,2],[2,4]]"
 phil --latex 'dy/dx = y'
 phil 'dsolve(Eq(d(y(x), x), y(x)), y(x))'
 phil :examples
 phil :tutorial
 phil :ode
+phil :linalg
 ```
 
 ### Interactive
@@ -87,9 +100,11 @@ phil> <expression>
 REPL commands:
 
 - `:h` / `:help` show help
+- `?` / `??` / `???` progressive feature discovery (standard help, power-user shortcuts, demos)
 - `:examples` show sample expressions
 - `:tutorial` / `:tour` show guided first-run tour
 - `:ode` show ODE cheat sheet and templates
+- `:linalg` / `:la` show linear algebra cheat sheet and templates
 - `:next` / `:repeat` / `:done` control interactive tutorial mode
 - `:v` / `:version` show current version
 - `:update` / `:check` compare current vs latest version and print update command
@@ -164,6 +179,7 @@ In REPL:
 - Startup (interactive terminals) prints a one-line up-to-date or update-available status.
 - `:version` shows your installed version.
 - `:update`/`:check` show current version, latest known release, and update command.
+- `?`, `??`, `???` progressively reveal shortcuts and capability demos.
 
 For release notifications on GitHub, use "Watch" -> "Custom" -> "Releases only" on the repo page.
 
@@ -245,6 +261,8 @@ $ phil --format pretty 'Matrix([[1,2],[3,4]])'
 
 ```bash
 uv run --group dev pytest
+# quick local loop (skip process-heavy integration tests)
+uv run --group dev pytest -m "not integration"
 # full local quality gate
 scripts/checks.sh
 ```
@@ -284,6 +302,10 @@ If you get stuck, run `:examples` or `:h`.
 | Matrix inverse | `inv(Matrix([[...]]))` |
 | Matrix rank | `rank(Matrix([[...]]))` |
 | Matrix eigenvalues | `eigvals(Matrix([[...]]))` |
+| Matrix RREF | `rref(Matrix([[...]]))` |
+| Matrix nullspace | `nullspace(Matrix([[...]]))` |
+| Solve linear system (Ax=b) | `msolve(Matrix([[...]]), Matrix([...]))` |
+| Symbolic linear solve | `linsolve((Eq(...), Eq(...)), (x, y))` |
 
 ### Symbols
 
@@ -295,11 +317,12 @@ If you get stuck, run `:examples` or `:h`.
 
 ### Matrix helpers
 
-`Matrix`, `eye`, `zeros`, `ones`, `det`, `inv`, `rank`, `eigvals`
+`Matrix`, `eye`, `zeros`, `ones`, `det`, `inv`, `rank`, `eigvals`, `rref`, `nullspace`, `msolve`, `linsolve`
 
 ### Syntax notes
 
 - `^` is exponentiation (`x^2`)
+- function exponent notation is accepted (`sin^2(x)`, `cos^2(x)`)
 - `!` is factorial (`5!`)
 - relaxed mode (default) allows implicit multiplication (`2x`); use `--strict` to require `2*x`
 - `d(expr)` / `int(expr)` infer the variable when exactly one symbol is present

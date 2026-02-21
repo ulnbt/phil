@@ -21,6 +21,7 @@ Project-specific knowledge for contributors.
   - `d(expr, var)`
   - `d(expr)` when variable can be inferred uniquely
   - Leibniz shorthand: `d(sin(x))/dx`, `df(t)/dt`
+  - Function exponent shorthand: `sin^2(x)`, `cos^2(x)`
   - ODE shorthand equation: `dy/dx = y`, `y' = y`, `y'' + y = 0`
   - LaTeX ODE shorthand: `\frac{dy}{dx} = y`, `\frac{d^2y}{dx^2} + y = 0`
   - LaTeX wrappers/commands normalized: `$...$`, `\(...\)`, `\sin`, `\cos`, `\ln`, `\sqrt{...}`, `\frac{a}{b}`
@@ -29,13 +30,17 @@ Project-specific knowledge for contributors.
   - `int(expr)` with unique variable inference
 - Matrix helpers:
   - `Matrix`, `eye`, `zeros`, `ones`
-  - `det`, `inv`, `rank`, `eigvals`
+  - `det`, `inv`, `rank`, `eigvals`, `rref`, `nullspace`
+  - `msolve(A, b)` for matrix equations `Ax=b`
+  - `linsolve((Eq(...), ...), (x, y, ...))` for symbolic linear systems
 - Session behavior (REPL):
   - assignment: `A = ...`
   - `ans` = last result
   - inline options are accepted (example: `--latex d(x^2, x)`)
+  - progressive help aliases: `?`, `??`, `???`
   - guided tutorial commands: `:tutorial`/`:tour`, `:next`, `:repeat`, `:done`
   - ODE helper command: `:ode`
+  - linear algebra helper command: `:linalg`/`:la`
 
 ## CLI Surface
 
@@ -56,7 +61,9 @@ Project-specific knowledge for contributors.
 - Unit + integration + regression tests.
 - Property tests via `hypothesis` for core invariants.
 - Hypothesis profiles:
-  - `default`: local baseline
+  - `default`: lighter local baseline (faster day-to-day runs)
   - `ci`: CI baseline (`HYPOTHESIS_PROFILE=ci`)
   - `fuzz`: long fuzzing runs (`HYPOTHESIS_PROFILE=fuzz`)
+- Local speed defaults:
+  - `uv run --group dev pytest -m "not integration"` for fast iteration
 - CI checks multiple Python versions, dedicated fuzz runs, dependency audit, and install smoke tests.
