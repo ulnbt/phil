@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -385,6 +386,40 @@ def _latest_pypi_version() -> str | None:
         return None
 
 
+_SEMVERISH_PATTERN = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:\.dev(\d+))?$")
+
+
+def _compare_versions(current: str, latest: str) -> int | None:
+    current_match = _SEMVERISH_PATTERN.match(current)
+    latest_match = _SEMVERISH_PATTERN.match(latest)
+    if current_match is None or latest_match is None:
+        return None
+
+    current_release = tuple(int(part) for part in current_match.group(1, 2, 3))
+    latest_release = tuple(int(part) for part in latest_match.group(1, 2, 3))
+    if current_release < latest_release:
+        return -1
+    if current_release > latest_release:
+        return 1
+
+    current_dev = current_match.group(4)
+    latest_dev = latest_match.group(4)
+    if current_dev is None and latest_dev is None:
+        return 0
+    if current_dev is None:
+        return 1
+    if latest_dev is None:
+        return -1
+
+    current_dev_num = int(current_dev)
+    latest_dev_num = int(latest_dev)
+    if current_dev_num < latest_dev_num:
+        return -1
+    if current_dev_num > latest_dev_num:
+        return 1
+    return 0
+
+
 def _print_update_status() -> None:
     if VERSION == "dev":
         print("current version: dev (local checkout)")
@@ -396,11 +431,21 @@ def _print_update_status() -> None:
     print(f"current version: {VERSION}")
     if latest is None:
         print("latest version: unavailable (offline or PyPI unreachable)")
-    elif latest == VERSION:
-        print(f"latest version: {latest} (up to date)")
+        print("hint: retry :check when online")
     else:
-        print(f"latest version: {latest} (update available)")
-    print(f"update with: {UPDATE_CMD}")
+        relation = _compare_versions(VERSION, latest)
+        if relation == 0 or latest == VERSION:
+            print(f"latest version: {latest} (up to date)")
+            print("no update needed")
+        elif relation == -1:
+            print(f"latest version: {latest} (update available)")
+            print(f"update with: {UPDATE_CMD}")
+        elif relation == 1:
+            print(f"latest version: {latest} (you are on a newer local/pre-release build)")
+            print("no update needed")
+        else:
+            print(f"latest version: {latest} (version comparison unavailable)")
+            print(f"update with: {UPDATE_CMD}")
 
 
 def _print_repl_startup_update_status() -> None:
@@ -415,11 +460,17 @@ def _print_repl_startup_update_status() -> None:
     latest = _latest_pypi_version()
     if latest is None:
         print("startup update check: latest version unavailable")
-    elif latest == VERSION:
-        print(f"startup update check: v{VERSION} is up to date")
     else:
-        print(f"startup update check: v{latest} available (you have v{VERSION})")
-        print(f"update with: {UPDATE_CMD}")
+        relation = _compare_versions(VERSION, latest)
+        if relation == 0 or latest == VERSION:
+            print(f"startup update check: v{VERSION} is up to date")
+        elif relation == -1:
+            print(f"startup update check: v{latest} available (you have v{VERSION})")
+            print(f"update with: {UPDATE_CMD}")
+        elif relation == 1:
+            print(f"startup update check: v{VERSION} is newer than latest release v{latest}")
+        else:
+            print("startup update check: version comparison unavailable")
 
 
 def _parse_options(args: list[str]) -> CLIOptions:
@@ -703,7 +754,6 @@ def run(argv: list[str] | None = None) -> int:
             return 1
 
     print(f"{CLI_NAME} v{VERSION} REPL. :h help, :q quit, Ctrl-D exit.")
-    print(f"update: {UPDATE_CMD}")
     _print_repl_startup_update_status()
     session_locals: dict = {}
     repl_format_mode = format_mode

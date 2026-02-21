@@ -258,6 +258,8 @@ def test_print_update_status_up_to_date(monkeypatch, capsys):
     cli._print_update_status()
     out = capsys.readouterr().out
     assert "up to date" in out
+    assert "no update needed" in out
+    assert "update with:" not in out
 
 
 def test_print_update_status_update_available(monkeypatch, capsys):
@@ -266,6 +268,7 @@ def test_print_update_status_update_available(monkeypatch, capsys):
     cli._print_update_status()
     out = capsys.readouterr().out
     assert "update available" in out
+    assert "update with:" in out
 
 
 def test_print_update_status_latest_unavailable(monkeypatch, capsys):
@@ -274,6 +277,19 @@ def test_print_update_status_latest_unavailable(monkeypatch, capsys):
     cli._print_update_status()
     out = capsys.readouterr().out
     assert "unavailable" in out
+    assert "retry :check" in out
+    assert "update with:" not in out
+
+
+def test_print_update_status_local_prerelease_newer_than_latest(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "VERSION", "0.1.12.dev0")
+    monkeypatch.setattr(cli, "_latest_pypi_version", lambda: "0.1.10")
+    cli._print_update_status()
+    out = capsys.readouterr().out
+    assert "newer local/pre-release build" in out
+    assert "no update needed" in out
+    assert "update available" not in out
+    assert "update with:" not in out
 
 
 def test_print_repl_startup_update_status_non_interactive(monkeypatch, capsys):
@@ -301,6 +317,16 @@ def test_print_repl_startup_update_status_update_available(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "available" in out
     assert "update with:" in out
+
+
+def test_print_repl_startup_update_status_local_prerelease_newer(monkeypatch, capsys):
+    monkeypatch.setattr(cli.sys, "stdin", SimpleNamespace(isatty=lambda: True))
+    monkeypatch.setattr(cli, "VERSION", "0.1.12.dev0")
+    monkeypatch.setattr(cli, "_latest_pypi_version", lambda: "0.1.10")
+    cli._print_repl_startup_update_status()
+    out = capsys.readouterr().out
+    assert "is newer than latest release" in out
+    assert "update with:" not in out
 
 
 def test_calc_version_package_missing(monkeypatch):
@@ -413,6 +439,16 @@ def test_run_repl_prints_startup_update_status(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "startup-status" in out
+
+
+def test_run_repl_does_not_print_always_on_update_line(monkeypatch, capsys):
+    inputs = iter([":q"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+    monkeypatch.setattr(cli, "_print_repl_startup_update_status", lambda: None)
+    rc = cli.run([])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "update: uv tool upgrade philcalc" not in out
 
 
 def test_run_repl_error_path(monkeypatch, capsys):
