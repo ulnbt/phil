@@ -8,7 +8,7 @@ _SUPPRESS = [HealthCheck.too_slow]
 
 settings.register_profile(
     "default",
-    settings(max_examples=100, deadline=None, suppress_health_check=_SUPPRESS),
+    settings(max_examples=50, deadline=None, suppress_health_check=_SUPPRESS),
 )
 settings.register_profile(
     "ci",

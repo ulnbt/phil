@@ -31,7 +31,14 @@ Test categories:
 - `regression`: fixed bug cases that must never regress.
 
 Property tests (`hypothesis`) are used for high-value invariants in numeric/symbolic behavior.
-Use `HYPOTHESIS_PROFILE=ci` for standard CI intensity and `HYPOTHESIS_PROFILE=fuzz` for deeper local fuzz runs.
+Default local runs use a lighter profile for speed; use `HYPOTHESIS_PROFILE=ci` for CI-intensity checks and `HYPOTHESIS_PROFILE=fuzz` for deeper local fuzz runs.
+
+Fast local loops:
+
+```bash
+# skip process-heavy integration tests while iterating
+uv run --group dev pytest -m "not integration"
+```
 
 ## Perfect Commit Standard
 

@@ -3,6 +3,10 @@ import re
 import subprocess
 import sys
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 
 def run_cli(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
