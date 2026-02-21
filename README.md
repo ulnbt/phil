@@ -12,6 +12,12 @@ Powered by [SymPy](https://www.sympy.org/).
 - Priorities: speed, correctness, and discoverability.
 - Input should be forgiving: when `phil` makes an assumption, it should make that interpretation visible to the user.
 
+## Inspiration
+
+- `phil` was inspired by [chadnauseam.com/coding/random/calculator-app](https://chadnauseam.com/coding/random/calculator-app).
+- A core motivating example is exact arithmetic on very large expressions:
+  - `10^10000 + 1 - 10^10000 = 1`
+
 ## Roadmap
 
 - See `ROADMAP.md` for planned `v0.3.0` and `v1.0.0` milestones.

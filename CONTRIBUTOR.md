@@ -62,6 +62,11 @@ Commit message guidance:
 - Subject: imperative and specific, <=72 chars.
 - Body: explain why, summarize what changed, note user impact.
 
+Further reading on this commit discipline and release confidence:
+
+- [The Perfect Commit](https://simonwillison.net/2022/Oct/29/the-perfect-commit/)
+- [Code Proven to Work](https://simonwillison.net/2025/Dec/18/code-proven-to-work/)
+
 ## CI Expectations
 
 CI runs:
