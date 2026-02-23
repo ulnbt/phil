@@ -59,6 +59,31 @@ def _suggest_strict_ode_multiplication(expr: str) -> str:
 
 def hint_for_error(message: str, expr: str | None = None, session_locals: dict | None = None) -> str | None:
     text = message.lower()
+    compact_expr = re.sub(r"\s+", "", expr).lower() if expr else ""
+
+    if compact_expr.startswith("gcd("):
+        if "takes 2 arguments or a sequence of arguments" in text or "positional argument" in text:
+            return "gcd syntax: gcd(a, b) (for example gcd(8, 12))"
+    if compact_expr.startswith("lcm("):
+        if "takes 2 arguments or a sequence of arguments" in text or "positional argument" in text:
+            return "lcm syntax: lcm(a, b) (for example lcm(8, 12))"
+    if compact_expr.startswith("isprime("):
+        if "is not an integer" in text:
+            return "isprime expects an integer n (for example isprime(101))"
+        if "positional argument" in text:
+            return "isprime syntax: isprime(n)"
+    if compact_expr.startswith("factorint("):
+        if "is not an integer" in text:
+            return "factorint expects an integer n (for example factorint(84))"
+        if "positional argument" in text:
+            return "factorint syntax: factorint(n)"
+    if compact_expr.startswith("num("):
+        if "missing 1 required positional argument" in text or "positional argument" in text:
+            return "num syntax: num(expr) (for example num(3/14))"
+    if compact_expr.startswith("den("):
+        if "missing 1 required positional argument" in text or "positional argument" in text:
+            return "den syntax: den(expr) (for example den(3/14))"
+
     if text.startswith("linalg ") or text.startswith("unknown linalg "):
         return "linalg syntax: 'linalg solve A=[[...]] b=[...]' or 'linalg rref A=[[...]]'; use :linalg"
     if "unexpected eof" in text:

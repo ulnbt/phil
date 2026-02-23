@@ -252,6 +252,19 @@ def test_repl_exact_integer_helper_parity():
     assert "E:" not in proc.stderr
 
 
+def test_cli_exact_helper_errors_include_recovery_hints():
+    cases = [
+        ("gcd(8)", "gcd syntax"),
+        ("factorint(1/2)", "factorint expects an integer"),
+        ("num()", "num syntax"),
+    ]
+    for expr, expected_hint in cases:
+        proc = run_cli(expr)
+        assert proc.returncode == 1
+        assert "E:" in proc.stderr
+        assert f"hint: {expected_hint}" in proc.stderr
+
+
 def test_cli_relaxed_sinx_shows_interpretation_hint():
     proc = run_cli("sinx")
     assert proc.returncode == 0

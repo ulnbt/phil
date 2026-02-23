@@ -118,6 +118,18 @@ def test_hint_for_error_messages():
         "invalid syntax",
         expr="ode y'' + 9*dy/dx + 20y = 0, y(0)=1, y'(0)=0",
     )
+    assert "gcd syntax" in cli._hint_for_error(
+        "gcd() takes 2 arguments or a sequence of arguments",
+        expr="gcd(8)",
+    )
+    assert "factorint expects an integer" in cli._hint_for_error(
+        "1/2 is not an integer",
+        expr="factorint(1/2)",
+    )
+    assert "num syntax" in cli._hint_for_error(
+        "_num() missing 1 required positional argument: 'expr'",
+        expr="num()",
+    )
     assert cli._hint_for_error("different error") is None
 
 

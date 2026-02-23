@@ -32,3 +32,27 @@ def test_hint_for_error_additional_branches():
     assert "derivative syntax" in diagnostics.hint_for_error("name 'a' is not defined", expr="d(a)")
     assert diagnostics.hint_for_error("data type not understood", expr="Matrix([1,2],[3,4])") == "matrix syntax: Matrix([[1,2],[3,4]])"
     assert "linalg syntax" in diagnostics.hint_for_error("unknown linalg subcommand")
+    assert "gcd syntax" in diagnostics.hint_for_error(
+        "gcd() takes 2 arguments or a sequence of arguments",
+        expr="gcd(8)",
+    )
+    assert "lcm syntax" in diagnostics.hint_for_error(
+        "lcm() takes 2 arguments or a sequence of arguments",
+        expr="lcm(8)",
+    )
+    assert "isprime expects an integer" in diagnostics.hint_for_error(
+        "x is not an integer",
+        expr="isprime(x)",
+    )
+    assert "factorint expects an integer" in diagnostics.hint_for_error(
+        "1/2 is not an integer",
+        expr="factorint(1/2)",
+    )
+    assert "num syntax" in diagnostics.hint_for_error(
+        "_num() missing 1 required positional argument: 'expr'",
+        expr="num()",
+    )
+    assert "den syntax" in diagnostics.hint_for_error(
+        "_den() missing 1 required positional argument: 'expr'",
+        expr="den()",
+    )

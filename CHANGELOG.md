@@ -4,6 +4,7 @@
 
 - Add exact arithmetic helpers to the default namespace: `gcd`, `lcm`, `isprime`, `factorint`, `num`, `den`.
 - Expand help/examples/docs to surface integer and rational exact-workflow commands.
+- Add helper-specific recovery hints for common mistakes (arity and integer-only requirements).
 - Add unit and integration coverage for one-shot and REPL behavior of the new helpers.
 
 ## 0.2.3 - 2026-02-23
