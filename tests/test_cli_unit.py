@@ -758,6 +758,25 @@ def test_run_repl_inline_options_with_remaining_expression(monkeypatch, capsys):
     assert calls == [("2x", False)]
 
 
+def test_configure_repl_line_editing_uses_readline(monkeypatch):
+    calls: list[str] = []
+    fake_readline = SimpleNamespace(__doc__="", parse_and_bind=lambda text: calls.append(text))
+    monkeypatch.setattr(cli.sys, "stdin", SimpleNamespace(isatty=lambda: True))
+    monkeypatch.setattr(cli, "import_module", lambda name: fake_readline)
+    assert cli._configure_repl_line_editing() is True
+    assert calls == ["tab: complete"]
+
+
+def test_configure_repl_line_editing_without_readline(monkeypatch):
+    monkeypatch.setattr(cli.sys, "stdin", SimpleNamespace(isatty=lambda: True))
+
+    def boom(name):
+        raise ImportError("no readline")
+
+    monkeypatch.setattr(cli, "import_module", boom)
+    assert cli._configure_repl_line_editing() is False
+
+
 def test_main_module_executes():
     with pytest.raises(SystemExit):
         runpy.run_module("calc.__main__", run_name="__main__")

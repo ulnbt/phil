@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-02-23
+
+- Initialize readline support on REPL startup so arrow keys and history editing work in interactive terminals.
+- Add an explicit REPL hint when readline support is unavailable and escape sequences may appear.
+
 ## 0.2.0 - 2026-02-21
 
 - Add matrix workflow helpers: `msolve(A, b)`, `rref(...)`, `nullspace(...)`, and `linsolve(...)`.

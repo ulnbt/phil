@@ -5,6 +5,7 @@ import re
 import shutil
 import subprocess
 import sys
+from importlib import import_module
 from importlib.metadata import PackageNotFoundError, version as package_version
 from urllib.parse import quote_plus
 from urllib.request import urlopen
@@ -556,6 +557,25 @@ def _try_parse_repl_inline_options(expr: str):
     )
 
 
+def _configure_repl_line_editing() -> bool:
+    if not sys.stdin.isatty():
+        return False
+    try:
+        readline = import_module("readline")
+    except Exception:
+        return False
+    try:
+        doc = getattr(readline, "__doc__", "") or ""
+        if "libedit" in doc:
+            readline.parse_and_bind("bind ^I rl_complete")
+        else:
+            readline.parse_and_bind("tab: complete")
+    except Exception:
+        # Arrow key history/editing still works without completion binding.
+        pass
+    return True
+
+
 def _execute_expression(
     expr: str,
     *,
@@ -687,6 +707,12 @@ def run(argv: list[str] | None = None) -> int:
             return 1
 
     print(f"{CLI_NAME} v{VERSION} REPL. :h help, :q quit, Ctrl-D exit.")
+    if not _configure_repl_line_editing() and sys.stdin.isatty():
+        print(
+            "hint: line editing unavailable (arrow keys/history may print escape codes); "
+            "install Python readline support",
+            file=sys.stderr,
+        )
     _print_repl_startup_update_status()
     session_locals: dict = {}
     repl_format_mode = format_mode
