@@ -221,6 +221,16 @@ def test_huge_factorial_call_literal_fails_fast():
         evaluate("factorial(100001)")
 
 
+def test_huge_parenthesized_factorial_literal_fails_fast():
+    with pytest.raises(ValueError, match="factorial input too large to evaluate exactly"):
+        evaluate("(100001)!")
+
+
+def test_huge_factorial_power_argument_fails_fast():
+    with pytest.raises(ValueError, match="factorial input too large to evaluate exactly"):
+        evaluate("factorial(10^10)")
+
+
 def test_blocks_import_injection():
     with pytest.raises(ValueError, match="blocked token"):
         evaluate('__import__("os").system("echo bad")')

@@ -15,6 +15,12 @@ def test_should_print_wolfram_hint_policy():
         )
         is False
     )
+    assert diagnostics.should_print_wolfram_hint(
+        ValueError(
+            "Exceeds the limit (4300 digits) for integer string conversion; "
+            "use sys.set_int_max_str_digits() to increase the limit"
+        )
+    ) is False
     assert diagnostics.should_print_wolfram_hint(ValueError("different error")) is True
 
 
@@ -81,4 +87,9 @@ def test_hint_for_error_additional_branches():
     assert "factorial grows very fast" in diagnostics.hint_for_error(
         "factorial input too large to evaluate exactly (max n 100000)",
         expr="100001!",
+    )
+    assert "integer input is too large to materialize" in diagnostics.hint_for_error(
+        "Exceeds the limit (4300 digits) for integer string conversion; "
+        "use sys.set_int_max_str_digits() to increase the limit",
+        expr="(100001)!",
     )

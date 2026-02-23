@@ -41,6 +41,7 @@ from sympy import (
     symbols,
     tan,
     zeros,
+    preorder_traversal,
 )
 from sympy.parsing.sympy_parser import (
     auto_number,
@@ -173,7 +174,7 @@ PRIME_AT_POINT_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})\s*\(\
 BARE_FUNC_ARG_PATTERN = re.compile(r"\b(sin|cos|tan)([xyzt])\b")
 MAX_INTEGER_POWER_EXP = 1_000_000
 MAX_FACTORIAL_N = 100_000
-FACTORIAL_LITERAL_PATTERN = re.compile(r"(?<![A-Za-z0-9_])(\d+)\s*!")
+FACTORIAL_LITERAL_PATTERN = re.compile(r"(?<![A-Za-z0-9_])(?:\(\s*)?(\d+)(?:\s*\))?\s*!")
 FACTORIAL_CALL_LITERAL_PATTERN = re.compile(r"\bfactorial\s*\(\s*(\d+)\s*\)")
 
 
@@ -435,6 +436,19 @@ def _validate_factorial_literals(expr: str) -> None:
                 )
 
 
+def _raise_if_huge_factorial_call(parsed) -> None:
+    if not hasattr(parsed, "args"):
+        return
+    for node in preorder_traversal(parsed):
+        if getattr(node, "func", None) != factorial or not getattr(node, "args", ()):
+            continue
+        n_value = _integer_value_capped(node.args[0], cap=MAX_FACTORIAL_N)
+        if n_value is not None and n_value > MAX_FACTORIAL_N:
+            raise ValueError(
+                f"factorial input too large to evaluate exactly (max n {MAX_FACTORIAL_N})"
+            )
+
+
 def _reduce_huge_integer_powers(parsed):
     if not hasattr(parsed, "atoms"):
         return None
@@ -462,6 +476,7 @@ def _parse_with_guardrails(expr: str, *, local_dict, transformations):
         transformations=transformations,
         evaluate=False,
     )
+    _raise_if_huge_factorial_call(parsed_safe)
     reduced = _reduce_huge_integer_powers(parsed_safe)
     if reduced is not None:
         return reduced

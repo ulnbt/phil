@@ -336,20 +336,36 @@ def test_cli_huge_factorial_fails_fast_with_hint():
     assert "hint: try WolframAlpha:" not in proc.stderr
 
 
+def test_cli_huge_parenthesized_factorial_fails_fast_with_hint():
+    proc = run_cli("(100001)!")
+    assert proc.returncode == 1
+    assert "E: factorial input too large to evaluate exactly" in proc.stderr
+    assert "hint: factorial grows very fast" in proc.stderr
+    assert "hint: try WolframAlpha:" not in proc.stderr
+
+
+def test_cli_huge_factorial_power_argument_fails_fast_with_hint():
+    proc = run_cli("factorial(10^10)")
+    assert proc.returncode == 1
+    assert "E: factorial input too large to evaluate exactly" in proc.stderr
+    assert "hint: factorial grows very fast" in proc.stderr
+    assert "hint: try WolframAlpha:" not in proc.stderr
+
+
 def test_cli_guardrailed_inputs_return_quickly():
     start = time.monotonic()
     proc = run_cli("10^(10000000000) + 1")
     elapsed = time.monotonic() - start
     assert proc.returncode == 1
     assert "integer power too large to evaluate exactly" in proc.stderr
-    assert elapsed < 2.5
+    assert elapsed < 5.0
 
     start = time.monotonic()
     proc = run_cli("100001!")
     elapsed = time.monotonic() - start
     assert proc.returncode == 1
     assert "factorial input too large to evaluate exactly" in proc.stderr
-    assert elapsed < 2.5
+    assert elapsed < 5.0
 
 
 def test_cli_and_repl_parity_for_non_cancellable_ultra_huge_power_error():

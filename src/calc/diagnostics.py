@@ -13,6 +13,8 @@ def should_print_wolfram_hint(exc: Exception) -> bool:
         return False
     if "factorial input too large to evaluate exactly" in text:
         return False
+    if "int_max_str_digits" in text:
+        return False
     return True
 
 
@@ -158,6 +160,8 @@ def hint_for_error(message: str, expr: str | None = None, session_locals: dict |
         )
     if "factorial input too large to evaluate exactly" in text:
         return "factorial grows very fast; use a smaller n or a symbolic form"
+    if "int_max_str_digits" in text:
+        return "integer input is too large to materialize; simplify or use a symbolic form first"
     if "empty expression" in text:
         return "enter a math expression, or use :examples"
     return None
