@@ -2,6 +2,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 
 import pytest
 
@@ -198,6 +199,21 @@ def test_cli_bad_derivative_syntax_has_specific_hint():
     assert "derivative syntax:" in proc.stderr
 
 
+def test_cli_ambiguous_trig_shorthand_has_specific_hint():
+    proc = run_cli("sin x^2")
+    assert proc.returncode == 1
+    assert "ambiguous trig shorthand" in proc.stderr
+    assert "sin(x^2)" in proc.stderr
+    assert "(sin(x))^2" in proc.stderr
+
+
+def test_cli_explain_parse_shows_unary_minus_power_precedence_note():
+    proc = run_cli("--explain-parse", "-2^2")
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "-4"
+    assert "precedence: -a^b means -(a^b)" in proc.stderr
+
+
 def test_cli_bad_matrix_syntax_has_specific_hint():
     proc = run_cli("Matrix([1,2],[3,4])")
     assert proc.returncode == 1
@@ -318,6 +334,22 @@ def test_cli_huge_factorial_fails_fast_with_hint():
     assert "E: factorial input too large to evaluate exactly" in proc.stderr
     assert "hint: factorial grows very fast" in proc.stderr
     assert "hint: try WolframAlpha:" not in proc.stderr
+
+
+def test_cli_guardrailed_inputs_return_quickly():
+    start = time.monotonic()
+    proc = run_cli("10^(10000000000) + 1")
+    elapsed = time.monotonic() - start
+    assert proc.returncode == 1
+    assert "integer power too large to evaluate exactly" in proc.stderr
+    assert elapsed < 2.5
+
+    start = time.monotonic()
+    proc = run_cli("100001!")
+    elapsed = time.monotonic() - start
+    assert proc.returncode == 1
+    assert "factorial input too large to evaluate exactly" in proc.stderr
+    assert elapsed < 2.5
 
 
 def test_cli_and_repl_parity_for_non_cancellable_ultra_huge_power_error():

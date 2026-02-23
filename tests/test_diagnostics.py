@@ -21,6 +21,11 @@ def test_should_print_wolfram_hint_policy():
 def test_parse_explanation_enabled_and_disabled():
     assert diagnostics.parse_explanation("sinx", relaxed=True, enabled=False) is None
     assert diagnostics.parse_explanation("sinx", relaxed=True, enabled=True) == "parsed as: sin(x)"
+    assert "precedence: -a^b means -(a^b)" in diagnostics.parse_explanation(
+        "-2^2",
+        relaxed=True,
+        enabled=True,
+    )
 
 
 def test_relaxed_rewrite_messages_deduplicates_and_strict_mode():
@@ -37,6 +42,7 @@ def test_eq_has_top_level_comma_edge_cases():
 def test_hint_for_error_additional_branches():
     assert "derivative syntax" in diagnostics.hint_for_error("Unexpected EOF while parsing", expr="d(x")
     assert "check commas and brackets" in diagnostics.hint_for_error("invalid syntax", expr="foo(")
+    assert "ambiguous trig shorthand" in diagnostics.hint_for_error("invalid syntax", expr="sin x^2")
     assert "try 'ff'" in diagnostics.hint_for_error(
         "cannot assign reserved name: f",
         session_locals={"ff": 1},

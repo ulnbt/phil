@@ -20,7 +20,11 @@ def parse_explanation(expr: str, relaxed: bool, enabled: bool) -> str | None:
     if not enabled:
         return None
     normalized = normalize_expression(expr, relaxed=relaxed)
-    return f"parsed as: {normalized}"
+    message = f"parsed as: {normalized}"
+    compact = re.sub(r"\s+", "", expr)
+    if re.match(r"^-[A-Za-z0-9_)]+(?:\^|\*\*)", compact):
+        message += " | precedence: -a^b means -(a^b); use (-a)^b for a negative base"
+    return message
 
 
 def relaxed_rewrite_messages(expr: str, relaxed: bool) -> list[str]:
@@ -97,6 +101,8 @@ def hint_for_error(message: str, expr: str | None = None, session_locals: dict |
     if "invalid syntax" in text:
         if expr:
             compact = re.sub(r"\s+", "", expr)
+            if re.search(r"\b(?:sin|cos|tan)\s+[A-Za-z0-9_]+\s*(?:\^|\*\*)", expr):
+                return "ambiguous trig shorthand: use sin(x^2) or (sin(x))^2 explicitly"
             if re.search(r"\bode\b", expr, flags=re.IGNORECASE):
                 suggested = _suggest_strict_ode_multiplication(expr)
                 if suggested != expr:
