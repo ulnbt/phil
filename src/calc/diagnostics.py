@@ -11,6 +11,8 @@ def should_print_wolfram_hint(exc: Exception) -> bool:
         return False
     if "integer power too large to evaluate exactly" in text:
         return False
+    if "factorial input too large to evaluate exactly" in text:
+        return False
     return True
 
 
@@ -148,6 +150,8 @@ def hint_for_error(message: str, expr: str | None = None, session_locals: dict |
             "power too large to expand exactly; simplify to cancel first "
             "(for example 10^N + 1 - 10^N), or use a smaller exponent"
         )
+    if "factorial input too large to evaluate exactly" in text:
+        return "factorial grows very fast; use a smaller n or a symbolic form"
     if "empty expression" in text:
         return "enter a math expression, or use :examples"
     return None

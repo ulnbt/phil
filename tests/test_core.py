@@ -202,6 +202,25 @@ def test_non_cancellable_ultra_huge_integer_power_variants_fail_fast(expr: str):
         evaluate(expr)
 
 
+def test_cancellable_power_tower_returns_one():
+    assert str(evaluate("2^(2^20) + 1 - 2^(2^20)")) == "1"
+
+
+def test_non_cancellable_power_tower_fails_fast():
+    with pytest.raises(ValueError, match="integer power too large to evaluate exactly"):
+        evaluate("2^(2^(2^20))")
+
+
+def test_huge_factorial_literal_fails_fast():
+    with pytest.raises(ValueError, match="factorial input too large to evaluate exactly"):
+        evaluate("100001!")
+
+
+def test_huge_factorial_call_literal_fails_fast():
+    with pytest.raises(ValueError, match="factorial input too large to evaluate exactly"):
+        evaluate("factorial(100001)")
+
+
 def test_blocks_import_injection():
     with pytest.raises(ValueError, match="blocked token"):
         evaluate('__import__("os").system("echo bad")')

@@ -9,6 +9,12 @@ def test_should_print_wolfram_hint_policy():
         )
         is False
     )
+    assert (
+        diagnostics.should_print_wolfram_hint(
+            ValueError("factorial input too large to evaluate exactly (max n 100000)")
+        )
+        is False
+    )
     assert diagnostics.should_print_wolfram_hint(ValueError("different error")) is True
 
 
@@ -65,4 +71,8 @@ def test_hint_for_error_additional_branches():
     assert "power too large to expand exactly" in diagnostics.hint_for_error(
         "integer power too large to evaluate exactly (max exponent 1000000)",
         expr="10^10000000000 + 1",
+    )
+    assert "factorial grows very fast" in diagnostics.hint_for_error(
+        "factorial input too large to evaluate exactly (max n 100000)",
+        expr="100001!",
     )

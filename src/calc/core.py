@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from difflib import get_close_matches
+from math import log
 
 from sympy import (
     Abs,
@@ -171,6 +172,9 @@ PRIME_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})")
 PRIME_AT_POINT_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})\s*\(\s*([^()]+?)\s*\)")
 BARE_FUNC_ARG_PATTERN = re.compile(r"\b(sin|cos|tan)([xyzt])\b")
 MAX_INTEGER_POWER_EXP = 1_000_000
+MAX_FACTORIAL_N = 100_000
+FACTORIAL_LITERAL_PATTERN = re.compile(r"(?<![A-Za-z0-9_])(\d+)\s*!")
+FACTORIAL_CALL_LITERAL_PATTERN = re.compile(r"\bfactorial\s*\(\s*(\d+)\s*\)")
 
 
 def _dependent_expr(dep: str, var: str) -> str:
@@ -382,11 +386,53 @@ def _is_huge_integer_power(node) -> bool:
     if not isinstance(node, Pow):
         return False
     if not (node.base.is_Integer and node.exp.is_Integer):
+        if not node.base.is_Integer:
+            return False
+    exp_value = _integer_value_capped(node.exp, cap=MAX_INTEGER_POWER_EXP)
+    if exp_value is None:
         return False
-    try:
-        return abs(int(node.exp)) > MAX_INTEGER_POWER_EXP
-    except Exception:
-        return False
+    return abs(exp_value) > MAX_INTEGER_POWER_EXP
+
+
+def _pow_capped(base: int, exp: int, cap: int) -> int | None:
+    if exp < 0:
+        return None
+    if base in {-1, 0, 1}:
+        return pow(base, exp)
+    if exp == 0:
+        return 1
+    # Fast magnitude check to avoid materializing huge intermediates.
+    if exp * log(abs(base)) > log(cap + 1):
+        return cap + 1
+    value = pow(base, exp)
+    if abs(value) > cap:
+        return cap + 1
+    return value
+
+
+def _integer_value_capped(node, *, cap: int) -> int | None:
+    if isinstance(node, Integer):
+        value = int(node)
+        if abs(value) > cap:
+            return cap + 1 if value > 0 else -(cap + 1)
+        return value
+    if isinstance(node, Pow):
+        base_value = _integer_value_capped(node.base, cap=cap)
+        exp_value = _integer_value_capped(node.exp, cap=cap)
+        if base_value is None or exp_value is None:
+            return None
+        return _pow_capped(base_value, exp_value, cap)
+    return None
+
+
+def _validate_factorial_literals(expr: str) -> None:
+    for pattern in (FACTORIAL_LITERAL_PATTERN, FACTORIAL_CALL_LITERAL_PATTERN):
+        for match in pattern.finditer(expr):
+            n = int(match.group(1))
+            if n > MAX_FACTORIAL_N:
+                raise ValueError(
+                    f"factorial input too large to evaluate exactly (max n {MAX_FACTORIAL_N})"
+                )
 
 
 def _reduce_huge_integer_powers(parsed):
@@ -406,6 +452,7 @@ def _reduce_huge_integer_powers(parsed):
 
 
 def _parse_with_guardrails(expr: str, *, local_dict, transformations):
+    _validate_factorial_literals(expr)
     # Parse safely first so huge integer powers stay symbolic and can be reduced
     # before any eager bigint materialization.
     parsed_safe = parse_expr(

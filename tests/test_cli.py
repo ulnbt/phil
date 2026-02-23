@@ -297,6 +297,29 @@ def test_cli_non_cancellable_ultra_huge_power_variants_fail_fast(expr: str):
     assert "hint: try WolframAlpha:" not in proc.stderr
 
 
+def test_cli_cancellable_power_tower_returns_one():
+    proc = run_cli("2^(2^20) + 1 - 2^(2^20)")
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "1"
+    assert "E:" not in proc.stderr
+
+
+def test_cli_non_cancellable_power_tower_fails_fast():
+    proc = run_cli("2^(2^(2^20))")
+    assert proc.returncode == 1
+    assert "E: integer power too large to evaluate exactly" in proc.stderr
+    assert "hint: power too large to expand exactly" in proc.stderr
+    assert "hint: try WolframAlpha:" not in proc.stderr
+
+
+def test_cli_huge_factorial_fails_fast_with_hint():
+    proc = run_cli("100001!")
+    assert proc.returncode == 1
+    assert "E: factorial input too large to evaluate exactly" in proc.stderr
+    assert "hint: factorial grows very fast" in proc.stderr
+    assert "hint: try WolframAlpha:" not in proc.stderr
+
+
 def test_cli_and_repl_parity_for_non_cancellable_ultra_huge_power_error():
     one_shot = run_cli("10^10000000000 + 1")
     repl = subprocess.run(
