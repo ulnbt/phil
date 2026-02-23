@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from sympy import Eq, dsolve
+from sympy import Eq, Symbol, dsolve
 from sympy.core.function import AppliedUndef
+from sympy.logic.boolalg import Boolean
 
 
 def split_top_level_commas(text: str) -> list[str]:
@@ -33,6 +34,16 @@ def infer_ode_dependent(eq_value: Eq):
     return candidates[0]
 
 
+def _reject_mixed_dependent_notation(value, dep) -> None:
+    dep_name = getattr(dep.func, "__name__", None)
+    if not dep_name:
+        return
+    if Symbol(dep_name) in value.free_symbols:
+        raise ValueError(
+            f"mixed dependent variable notation: found both {dep_name} and {dep_name}(x); use one style"
+        )
+
+
 def evaluate_ode_alias(
     expr: str,
     *,
@@ -62,6 +73,7 @@ def evaluate_ode_alias(
     dep = infer_ode_dependent(eq_value)
     if dep is None:
         raise ValueError("could not infer dependent function; use y(x)-style notation")
+    _reject_mixed_dependent_notation(eq_value, dep)
 
     ics: dict = {}
     for ic_text in ic_texts:
@@ -72,7 +84,12 @@ def evaluate_ode_alias(
             simplify_output=simplify_output,
         )
         if not isinstance(ic_value, Eq):
+            if isinstance(ic_value, (bool, Boolean)):
+                raise ValueError(
+                    f"initial condition reduced to a boolean: {ic_text}; use forms like y(0)=1 or y'(0)=0"
+                )
             raise ValueError(f"initial condition must be an equation: {ic_text}")
+        _reject_mixed_dependent_notation(ic_value, dep)
         ics[ic_value.lhs] = ic_value.rhs
 
     if ics:

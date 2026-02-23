@@ -102,6 +102,8 @@ LOCALS_DICT = {
     "nullspace": lambda matrix: matrix.nullspace(),
     "msolve": lambda matrix, rhs: matrix.LUsolve(rhs),
     "linsolve": linsolve,
+    "symbols": symbols,
+    "S": Symbol,
 }
 
 # parse_expr internally uses eval. Keep globals minimal and disable builtins.
@@ -141,6 +143,7 @@ LATEX_HIGHER_LEIBNIZ_PATTERN = re.compile(
 LATEX_FRAC_PATTERN = re.compile(r"\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}")
 LATEX_SQRT_PATTERN = re.compile(r"\\sqrt\s*\{([^{}]+)\}")
 PRIME_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})")
+PRIME_AT_POINT_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})\s*\(\s*([^()]+?)\s*\)")
 BARE_FUNC_ARG_PATTERN = re.compile(r"\b(sin|cos|tan)([xyzt])\b")
 
 
@@ -152,8 +155,27 @@ def _dependent_expr(dep: str, var: str) -> str:
     return dep
 
 
-def _replace_bare_dependent(rhs: str, dep: str, dep_expr: str) -> str:
-    return re.sub(rf"\b{re.escape(dep)}\b(?!\s*\()", dep_expr, rhs)
+def _replace_bare_dependent(
+    rhs: str,
+    dep: str,
+    dep_expr: str,
+    *,
+    add_implicit_mul: bool = True,
+) -> str:
+    pattern = re.compile(
+        rf"(?<![A-Za-z_]){re.escape(dep)}(?![A-Za-z0-9_]|(?:\s*\())"
+    )
+
+    def repl(match: re.Match[str]) -> str:
+        if (
+            add_implicit_mul
+            and match.start() > 0
+            and (rhs[match.start() - 1].isalnum() or rhs[match.start() - 1] == ")")
+        ):
+            return f"*{dep_expr}"
+        return dep_expr
+
+    return pattern.sub(repl, rhs)
 
 
 def _strip_outer_wrappers(text: str) -> str:
@@ -207,6 +229,19 @@ def _replace_prime_notation(text: str) -> str:
     )
 
 
+def _replace_prime_at_point_notation(text: str) -> str:
+    def repl(match: re.Match[str]) -> str:
+        dep = match.group(1)
+        order = len(match.group(2))
+        at = match.group(3).strip()
+        derivative = _nth_derivative(dep, "x", order)
+        if at == "x":
+            return derivative
+        return f"{derivative}.subs(x, {at})"
+
+    return PRIME_AT_POINT_PATTERN.sub(repl, text)
+
+
 def _normalize_bare_function_shorthand(
     text: str, *, relaxed: bool
 ) -> tuple[str, list[tuple[str, str]]]:
@@ -251,13 +286,14 @@ def reserved_name_suggestion(
     return matches[0]
 
 
-def _normalize_ode_equation_dependents(text: str) -> str:
+def _normalize_ode_equation_dependents(text: str, *, relaxed: bool) -> str:
     out = text
-    if EQUALITY_PATTERN.search(out):
-        if "d(yf(x), x)" in out:
-            out = _replace_bare_dependent(out, "y", "yf(x)")
-        if "d(f(x), x)" in out:
-            out = _replace_bare_dependent(out, "f", "f(x)")
+    if not EQUALITY_PATTERN.search(out):
+        return out
+    if re.search(r"\bd\s*\(\s*(?:yf\s*\(|y\b)", out):
+        out = _replace_bare_dependent(out, "y", "yf(x)", add_implicit_mul=relaxed)
+    if re.search(r"\bd\s*\(\s*f\s*\(", out):
+        out = _replace_bare_dependent(out, "f", "f(x)", add_implicit_mul=relaxed)
     return out
 
 
@@ -278,6 +314,7 @@ def normalize_expression(expression: str, relaxed: bool = False) -> str:
     # Accept common math shorthand from CAS/calculator input style.
     normalized = re.sub(r"\bln\s*\(", "log(", normalized)
     normalized, _ = _normalize_bare_function_shorthand(normalized, relaxed=relaxed)
+    normalized = _replace_prime_at_point_notation(normalized)
     normalized = _replace_prime_notation(normalized)
     # Treat y(x) as an ODE function call while keeping y available as a symbol.
     normalized = re.sub(r"\by\s*\(", "yf(", normalized)
@@ -285,7 +322,7 @@ def normalize_expression(expression: str, relaxed: bool = False) -> str:
     if ode_match:
         dep, var, rhs = ode_match.group(1), ode_match.group(2), ode_match.group(3)
         dep_expr = _dependent_expr(dep, var)
-        rhs = _replace_bare_dependent(rhs, dep, dep_expr)
+        rhs = _replace_bare_dependent(rhs, dep, dep_expr, add_implicit_mul=relaxed)
         return f"Eq(d({dep_expr}, {var}), {rhs})"
     # Support Leibniz-style shorthand: d(expr)/dvar -> d(expr, var)
     normalized = re.sub(
@@ -297,7 +334,7 @@ def normalize_expression(expression: str, relaxed: bool = False) -> str:
         lambda m: f"d({_dependent_expr(m.group(1), m.group(2))}, {m.group(2)})",
         normalized,
     )
-    normalized = _normalize_ode_equation_dependents(normalized)
+    normalized = _normalize_ode_equation_dependents(normalized, relaxed=relaxed)
     if EQUALITY_PATTERN.search(normalized) and not ASSIGNMENT_PATTERN.match(normalized):
         lhs, rhs = EQUALITY_PATTERN.split(normalized, maxsplit=1)
         lhs = lhs.strip()

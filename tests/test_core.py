@@ -39,6 +39,21 @@ def test_latex_higher_derivative_ode_equation_normalizes():
     assert str(evaluate(r"\frac{d^2y}{dx^2} + y = 0")) == "Eq(y(x) + Derivative(y(x), (x, 2)), 0)"
 
 
+def test_ode_equation_rewrites_implicit_dependent_terms_in_relaxed_mode():
+    normalized = normalize_expression("y'' + 9*dy/dx + 20y = 0", relaxed=True)
+    assert normalized == "Eq(d(d(yf(x), x), x) + 9*d(yf(x), x) + 20*yf(x), 0)"
+
+
+def test_ode_equation_strict_does_not_insert_implicit_multiplication():
+    normalized = normalize_expression("y'' + 9*dy/dx + 20y = 0", relaxed=False)
+    assert normalized == "Eq(d(d(yf(x), x), x) + 9*d(yf(x), x) + 20yf(x), 0)"
+
+
+def test_ode_initial_condition_prime_at_point_normalizes():
+    normalized = normalize_expression("y'(0)=0", relaxed=True)
+    assert normalized == "Eq(d(yf(x), x).subs(x, 0), 0)"
+
+
 def test_markdown_wrapped_expression():
     assert str(evaluate("$d(x^2, x)$")) == "2*x"
 
@@ -95,6 +110,18 @@ def test_integral_inference_no_symbols():
 
 def test_solve():
     assert str(evaluate("solve(x^2 - 4, x)")) == "[-2, 2]"
+
+
+def test_symbol_helpers_for_coefficient_workflows():
+    assert str(evaluate('symbols("A B C")')) == "(A, B, C)"
+    out = str(
+        evaluate(
+            'solve(2*x^2 + 43*x + 22 - (S("A")*(x-7)^2 + S("B")*(x+8)*(x-7) + S("C")*(x+8)), (S("A"), S("B"), S("C")))'
+        )
+    )
+    assert "A: -194/225" in out
+    assert "B: 644/225" in out
+    assert "C: 421/15" in out
 
 
 def test_numeric_eval():

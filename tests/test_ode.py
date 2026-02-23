@@ -42,6 +42,18 @@ def test_evaluate_ode_alias_success_with_ics():
     assert "ics={y(0): 1}" in parsed
 
 
+def test_evaluate_ode_alias_accepts_prime_ic_and_implicit_dependent_term():
+    value, parsed = evaluate_ode_alias(
+        "ode y'' + 9*dy/dx + 20y = 0, y(0)=1, y'(0)=0",
+        evaluate_fn=evaluate,
+        relaxed=True,
+        simplify_output=True,
+        session_locals={},
+    )
+    assert str(value) == "Eq(y(x), (5 - 4*exp(-x))*exp(-4*x))"
+    assert "ics={y(0): 1, Subs(Derivative(y(x), x), x, 0): 0}" in parsed
+
+
 def test_evaluate_ode_alias_raises_on_empty_body():
     with pytest.raises(ValueError, match="ode expects an equation"):
         evaluate_ode_alias(
@@ -111,3 +123,14 @@ def test_evaluate_ode_alias_validates_initial_conditions_and_passes_flags():
 
     assert calls[0] == ("y' = y", False, False, {"a": 1})
     assert calls[1] == ("1", False, False, {"a": 1})
+
+
+def test_evaluate_ode_alias_rejects_boolean_initial_condition():
+    with pytest.raises(ValueError, match="initial condition reduced to a boolean"):
+        evaluate_ode_alias(
+            "ode y' = y, 0=0",
+            evaluate_fn=evaluate,
+            relaxed=True,
+            simplify_output=True,
+            session_locals={},
+        )

@@ -50,6 +50,13 @@ def eq_has_top_level_comma(expr: str) -> bool:
     return False
 
 
+def _suggest_strict_ode_multiplication(expr: str) -> str:
+    # In strict mode, users must write explicit multiplication for ODE shorthand.
+    fixed = re.sub(r"(?<=[0-9)])\s+(?=[A-Za-z(])", "*", expr)
+    fixed = re.sub(r"(?<=[0-9)])(?=[A-Za-z(])", "*", fixed)
+    return fixed
+
+
 def hint_for_error(message: str, expr: str | None = None, session_locals: dict | None = None) -> str | None:
     text = message.lower()
     if text.startswith("linalg ") or text.startswith("unknown linalg "):
@@ -61,6 +68,13 @@ def hint_for_error(message: str, expr: str | None = None, session_locals: dict |
     if "invalid syntax" in text:
         if expr:
             compact = re.sub(r"\s+", "", expr)
+            if re.search(r"\bode\b", expr, flags=re.IGNORECASE):
+                suggested = _suggest_strict_ode_multiplication(expr)
+                if suggested != expr:
+                    return (
+                        "use explicit multiplication in ODEs (e.g. 20*y); "
+                        f"try: {suggested} ; or run without --strict"
+                    )
             if expr.strip().startswith("Eq(") and not eq_has_top_level_comma(expr):
                 return "Eq syntax: Eq(lhs, rhs), for example Eq(d(y(x), x), y(x))"
             if "dsolve(" in compact and "eq(" not in compact:
@@ -80,11 +94,23 @@ def hint_for_error(message: str, expr: str | None = None, session_locals: dict |
             return "'f' is reserved for function notation in ODEs; choose another variable name (e.g. ff)"
         return "that name is reserved by phil internals; choose a different variable name"
     if "name '" in text and "is not defined" in text:
+        missing = re.search(r"name '([^']+)' is not defined", message)
+        missing_name = missing.group(1) if missing else None
+        if missing_name and missing_name.isalpha() and missing_name[0].isupper():
+            return "for symbolic coefficients, use inline names like S('A'), S('B'), S('C')"
         if expr and ("/d" in expr or expr.strip().startswith("d")):
             return "derivative syntax: d(expr, var) or d(sin(x))/dx or df(t)/dt"
-        return "use one of: x y z t pi e f and documented functions"
+        return "use one of: x y z t pi e f, plus helper functions like symbols(...)"
     if "dsolve() and classify_ode() only work with functions of one variable" in text:
         return "for ODEs, use function notation: y(x) and dsolve(Eq(d(y(x), x), ...), y(x))"
+    if "mixed dependent variable notation" in text:
+        return "in ODE input, use one dependent form consistently (y with y'/dy/dx, or explicit y(x))"
+    if "initial condition reduced to a boolean" in text:
+        return "the IC simplified before solving; use equations like y(0)=1 or y'(0)=0"
+    if "initial condition must be an equation" in text and expr:
+        compact = re.sub(r"\s+", "", expr)
+        if "d(y,x).subs" in compact or "d(f,x).subs" in compact:
+            return "use y'(0)=... or d(y(x), x).subs(x, 0)=... for derivative initial conditions"
     if "data type not understood" in text:
         if expr and "matrix(" in expr.lower():
             return "matrix syntax: Matrix([[1,2],[3,4]])"

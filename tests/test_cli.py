@@ -261,6 +261,8 @@ def test_cli_ode_shortcut():
     assert proc.returncode == 0
     assert "ode quick reference:" in proc.stdout
     assert "quick start (human style):" in proc.stdout
+    assert "y'(0)=0" in proc.stdout
+    assert "use 20*y, not 20y" in proc.stdout
     assert "dsolve(Eq(d(y(x), x), y(x)), y(x))" in proc.stdout
 
 
@@ -285,6 +287,25 @@ def test_cli_ode_alias_with_ics():
     proc = run_cli("ode y' = y, y(0)=1")
     assert proc.returncode == 0
     assert "y(x) = exp(x)" in proc.stdout
+
+
+def test_cli_ode_alias_second_order_with_prime_ic():
+    proc = run_cli("ode y'' + 9*dy/dx + 20y = 0, y(0)=1, y'(0)=0")
+    assert proc.returncode == 0
+    assert "y(x) = (5 - 4*exp(-x))*exp(-4*x)" in proc.stdout
+
+
+def test_cli_ode_alias_strict_requires_explicit_multiplication():
+    proc = run_cli("--strict", "ode y'' + 9*dy/dx + 20 y = 0, y(0)=1, y'(0)=0")
+    assert proc.returncode == 1
+    assert "use explicit multiplication in ODEs" in proc.stderr
+    assert "try: ode y'' + 9*dy/dx + 20*y = 0, y(0)=1, y'(0)=0" in proc.stderr
+
+
+def test_cli_ode_alias_strict_with_explicit_multiplication_succeeds():
+    proc = run_cli("--strict", "ode y'' + 9*dy/dx + 20*y = 0, y(0)=1, y'(0)=0")
+    assert proc.returncode == 0
+    assert "y(x) = (5 - 4*exp(-x))*exp(-4*x)" in proc.stdout
 
 
 def test_cli_linalg_alias_solve():

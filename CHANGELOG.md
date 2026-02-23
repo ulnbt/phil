@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2 - 2026-02-23
+
+- Improve ODE UX: normalize dependent-variable terms more consistently in `ode ...` input (including forms like `20y` and `d(y, x)`).
+- Accept prime-at-point initial conditions like `y'(0)=0` in `ode ...` workflows.
+- Clarify `:ode` help text with second-order + IC examples and explicit multiplication guidance.
+- Add symbol helpers `symbols("A B C")` and `S("A")` to simplify coefficient-matching workflows.
+- Improve undefined-name hints for uppercase coefficient symbols with direct recovery guidance.
+
 ## 0.2.1 - 2026-02-23
 
 - Initialize readline support on REPL startup so arrow keys and history editing work in interactive terminals.

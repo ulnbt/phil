@@ -83,7 +83,8 @@ def test_print_parse_explanation(capsys):
 
 def test_hint_for_error_messages():
     assert "missing closing" in cli._hint_for_error("Unexpected EOF while parsing")
-    assert "documented functions" in cli._hint_for_error("name 'a' is not defined")
+    assert "symbols(...)" in cli._hint_for_error("name 'a' is not defined")
+    assert "S('A')" in cli._hint_for_error("name 'A' is not defined")
     assert "derivative syntax" in cli._hint_for_error("invalid syntax", expr="d(sin(x)/dx")
     assert "matrix syntax" in cli._hint_for_error("invalid syntax", expr="Matrix([1,2],[3,4])")
     assert "Eq syntax" in cli._hint_for_error("invalid syntax", expr="Eq(d(y(x), x) y(x))")
@@ -95,6 +96,28 @@ def test_hint_for_error_messages():
     assert "linalg syntax" in cli._hint_for_error("unknown linalg subcommand")
     assert "reserved for function notation" in cli._hint_for_error("cannot assign reserved name: f")
     assert "reserved by phil internals" in cli._hint_for_error("cannot assign reserved name: sin")
+    assert "one dependent form consistently" in cli._hint_for_error("mixed dependent variable notation: found both y and y(x)")
+    assert "simplified before solving" in cli._hint_for_error("initial condition reduced to a boolean")
+    assert "y'(0)=..." in cli._hint_for_error(
+        "initial condition must be an equation: d(y, x).subs(x, 0)=0",
+        expr="ode y' = y, d(y, x).subs(x, 0)=0",
+    )
+    assert "explicit multiplication in ODEs" in cli._hint_for_error(
+        "invalid syntax",
+        expr="ode y'' + 9*dy/dx + 20 y = 0, y(0)=1, y'(0)=0",
+    )
+    assert "try: ode y'' + 9*dy/dx + 20*y = 0, y(0)=1, y'(0)=0" in cli._hint_for_error(
+        "invalid syntax",
+        expr="ode y'' + 9*dy/dx + 20 y = 0, y(0)=1, y'(0)=0",
+    )
+    assert "explicit multiplication in ODEs" in cli._hint_for_error(
+        "invalid syntax",
+        expr="ode y'' + 9*dy/dx + 20y = 0, y(0)=1, y'(0)=0",
+    )
+    assert "try: ode y'' + 9*dy/dx + 20*y = 0, y(0)=1, y'(0)=0" in cli._hint_for_error(
+        "invalid syntax",
+        expr="ode y'' + 9*dy/dx + 20y = 0, y(0)=1, y'(0)=0",
+    )
     assert cli._hint_for_error("different error") is None
 
 
