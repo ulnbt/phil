@@ -20,7 +20,11 @@ from sympy import (
     eye,
     exp,
     factorial,
+    factorint,
+    gcd,
     integrate,
+    isprime,
+    lcm,
     linsolve,
     log,
     ones,
@@ -68,6 +72,14 @@ def _int(expr, var=None):
     return integrate(expr, var)
 
 
+def _num(expr):
+    return expr.as_numer_denom()[0]
+
+
+def _den(expr):
+    return expr.as_numer_denom()[1]
+
+
 LOCALS_DICT = {
     "x": x,
     "y": y,
@@ -79,6 +91,12 @@ LOCALS_DICT = {
     "yf": yf,
     "d": _d,
     "int": _int,
+    "gcd": gcd,
+    "lcm": lcm,
+    "isprime": isprime,
+    "factorint": factorint,
+    "num": _num,
+    "den": _den,
     "solve": solve,
     "dsolve": dsolve,
     "Eq": Eq,

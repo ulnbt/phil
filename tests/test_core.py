@@ -7,6 +7,17 @@ def test_exact_arithmetic():
     assert str(evaluate("1/3 + 1/6")) == "1/2"
 
 
+def test_exact_integer_and_rational_helpers():
+    assert str(evaluate("gcd(8, 12)")) == "4"
+    assert str(evaluate("lcm(8, 12)")) == "24"
+    assert str(evaluate("isprime(101)")) == "True"
+    assert str(evaluate("factorint(84)")) == "{2: 2, 3: 1, 7: 1}"
+    assert str(evaluate("num(3/14)")) == "3"
+    assert str(evaluate("den(3/14)")) == "14"
+    assert str(evaluate("num((x+1)/3)")) == "x + 1"
+    assert str(evaluate("den((x+1)/3)")) == "3"
+
+
 def test_derivative():
     assert str(evaluate("d(x^3 + 2*x, x)")) == "3*x**2 + 2"
 

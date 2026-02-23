@@ -309,6 +309,9 @@ If you get stuck, run `:examples` or `:h`.
 | Solve ODE | `dsolve(Eq(...), func)` |
 | Equation | `Eq(lhs, rhs)` |
 | Numeric eval | `N(expr, digits)` |
+| Integer GCD/LCM | `gcd(a, b)`, `lcm(a, b)` |
+| Primality / factorization | `isprime(n)`, `factorint(n)` |
+| Rational parts | `num(expr)`, `den(expr)` |
 | Matrix determinant | `det(Matrix([[...]]))` |
 | Matrix inverse | `inv(Matrix([[...]]))` |
 | Matrix rank | `rank(Matrix([[...]]))` |
@@ -325,6 +328,10 @@ If you get stuck, run `:examples` or `:h`.
 ### Functions
 
 `sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `abs`
+
+### Exact arithmetic helpers
+
+`gcd`, `lcm`, `isprime`, `factorint`, `num`, `den`
 
 ### Symbol helpers
 

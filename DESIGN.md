@@ -54,6 +54,7 @@ By default, CLI evaluation uses relaxed parsing (`implicit_multiplication_applic
 `d(expr)` and `int(expr)` can infer the variable only when the expression has exactly one free symbol. Ambiguous or symbol-free expressions must pass the variable explicitly.
 REPL evaluation supports session locals, assignment (`name = expr`), and `ans` for last result.
 Matrix helpers are exposed in the allowed namespace (`Matrix`, `eye`, `zeros`, `ones`, `det`, `inv`, `rank`, `eigvals`, `rref`, `nullspace`, `msolve`, `linsolve`).
+Exact arithmetic helpers are exposed for terminal workflows (`gcd`, `lcm`, `isprime`, `factorint`, `num`, `den`).
 
 ## Exit-code behavior
 

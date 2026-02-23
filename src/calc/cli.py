@@ -102,6 +102,7 @@ HELP_TEXT = (
     "  d(x^3 + 2*x, x)\n"
     "  int(sin(x), x)\n"
     "  solve(x^2 - 4, x)\n"
+    "  gcd(8, 12), lcm(8, 12), factorint(84), num(3/14), den(3/14)\n"
     "  N(pi, 20)"
 )
 HELP_CHAIN_TEXT = (
@@ -130,6 +131,8 @@ HELP_DEMO_TEXT = (
     "    -> 1/2\n"
     "  symbolic workflow:\n"
     "    d(x^3 + 2*x, x), int(sin(x), x), solve(x^2 - 4, x)\n"
+    "  exact integer helpers:\n"
+    "    gcd(8, 12), lcm(8, 12), factorint(84), isprime(101)\n"
 )
 EXAMPLES_TEXT = (
     "examples:\n"
@@ -140,6 +143,11 @@ EXAMPLES_TEXT = (
     "  d(x^3 + 2*x, x)\n"
     "  int(sin(x), x)\n"
     "  solve(x^2 - 4, x)\n"
+    "  gcd(8, 12)\n"
+    "  lcm(8, 12)\n"
+    "  factorint(84)\n"
+    "  num(3/14)\n"
+    "  den(3/14)\n"
     "  solve(2*x^2+43*x+22-(S('A')*(x-7)^2+S('B')*(x+8)*(x-7)+S('C')*(x+8)), (S('A'), S('B'), S('C')))\n"
     "  (854/2197)e^{8t}+(1343/2197)e^{-5t}+((9/26)t^2 -(9/169)t)e^{8t}\n"
     "  dsolve(Eq(f(t).diff(t), f(t)), f(t))\n"

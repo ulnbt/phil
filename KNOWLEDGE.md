@@ -28,6 +28,10 @@ Project-specific knowledge for contributors.
 - Integral:
   - `int(expr, var)`
   - `int(expr)` with unique variable inference
+- Exact arithmetic helpers:
+  - `gcd(a, b)`, `lcm(a, b)`
+  - `isprime(n)`, `factorint(n)`
+  - `num(expr)`, `den(expr)` via `as_numer_denom()`
 - Matrix helpers:
   - `Matrix`, `eye`, `zeros`, `ones`
   - `det`, `inv`, `rank`, `eigvals`, `rref`, `nullspace`

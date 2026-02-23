@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4 - 2026-02-23
+
+- Add exact arithmetic helpers to the default namespace: `gcd`, `lcm`, `isprime`, `factorint`, `num`, `den`.
+- Expand help/examples/docs to surface integer and rational exact-workflow commands.
+- Add unit and integration coverage for one-shot and REPL behavior of the new helpers.
+
 ## 0.2.3 - 2026-02-23
 
 - Simplify REPL startup banner to `phil vX.Y.Z REPL` with compact update badge status.

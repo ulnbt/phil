@@ -222,6 +222,36 @@ def test_cli_accepts_latex_leibniz_ode():
     assert "Derivative(y(x), x)" in proc.stdout
 
 
+def test_cli_exact_integer_and_rational_helpers():
+    cases = [
+        ("gcd(8, 12)", "4"),
+        ("lcm(8, 12)", "24"),
+        ("isprime(101)", "True"),
+        ("factorint(84)", "{2: 2, 3: 1, 7: 1}"),
+        ("num(3/14)", "3"),
+        ("den(3/14)", "14"),
+    ]
+    for expr, expected in cases:
+        proc = run_cli(expr)
+        assert proc.returncode == 0
+        assert proc.stdout.strip() == expected
+        assert "E:" not in proc.stderr
+
+
+def test_repl_exact_integer_helper_parity():
+    proc = subprocess.run(
+        [sys.executable, "-m", "calc"],
+        input="gcd(8, 12)\nfactorint(84)\n:q\n",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0
+    assert "phil> 4" in proc.stdout
+    assert "phil> {2: 2, 3: 1, 7: 1}" in proc.stdout
+    assert "E:" not in proc.stderr
+
+
 def test_cli_relaxed_sinx_shows_interpretation_hint():
     proc = run_cli("sinx")
     assert proc.returncode == 0
