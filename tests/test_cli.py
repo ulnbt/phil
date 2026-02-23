@@ -173,7 +173,8 @@ def test_cli_help_alias_chain_shortcuts():
     proc = run_cli("?")
     assert proc.returncode == 0
     assert "help chain:" in proc.stdout
-    assert "power-user shortcuts" in proc.stdout
+    assert "speed shortcuts" in proc.stdout
+    assert "usage:" not in proc.stdout
 
     proc = run_cli("??")
     assert proc.returncode == 0
@@ -290,10 +291,17 @@ def test_cli_examples_shortcut():
     proc = run_cli(":examples")
     assert proc.returncode == 0
     assert "examples:" in proc.stdout
+    assert "int(sinx)" in proc.stdout
+    assert "linalg solve A=[[2,1],[1,3]] b=[1,2]" in proc.stdout
 
 
 def test_cli_tutorial_shortcut():
     proc = run_cli(":tutorial")
+    assert proc.returncode == 0
+    assert "guided tour:" in proc.stdout
+    assert "full tutorial: TUTORIAL.md" in proc.stdout
+
+    proc = run_cli(":t")
     assert proc.returncode == 0
     assert "guided tour:" in proc.stdout
     assert "full tutorial: TUTORIAL.md" in proc.stdout
@@ -392,7 +400,7 @@ def test_repl_help_and_quit():
     assert proc.returncode == 0
     assert "phil v" in proc.stdout
     assert "REPL" in proc.stdout
-    assert "(:h help)" in proc.stdout
+    assert "(:h help, :t tutorial)" in proc.stdout
     assert "help chain:" in proc.stdout
     assert "power-user shortcuts:" in proc.stdout
     assert "capability demos:" in proc.stdout
@@ -409,7 +417,7 @@ def test_repl_tutorial_command():
     )
     assert proc.returncode == 0
     assert "tutorial mode started" in proc.stdout
-    assert "step 1/6" in proc.stdout
+    assert "step 1/7" in proc.stdout
 
 
 def test_repl_interactive_tutorial_flow():
@@ -422,9 +430,22 @@ def test_repl_interactive_tutorial_flow():
     )
     assert proc.returncode == 0
     assert "tutorial mode started" in proc.stdout
-    assert "step 1/6" in proc.stdout
-    assert "step 2/6" in proc.stdout
+    assert "step 1/7" in proc.stdout
+    assert "step 2/7" in proc.stdout
     assert "tutorial mode ended" in proc.stdout
+
+
+def test_repl_tutorial_enter_advances_to_next_step():
+    proc = subprocess.run(
+        [sys.executable, "-m", "calc"],
+        input=":tutorial\n\n:q\n",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0
+    assert "step 1/7" in proc.stdout
+    assert "step 2/7" in proc.stdout
 
 
 def test_repl_ode_command():

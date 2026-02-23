@@ -607,6 +607,8 @@ def test_run_repl_empty_then_command(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "repl commands:" in out
+    assert "reference:" in out
+    assert "runnable patterns: :examples" in out
 
 
 def test_run_repl_prints_startup_update_status(monkeypatch, capsys):
@@ -616,7 +618,7 @@ def test_run_repl_prints_startup_update_status(monkeypatch, capsys):
     rc = cli.run([])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "REPL [startup-status] (:h help)" in out
+    assert "REPL [startup-status] (:h help, :t tutorial)" in out
 
 
 def test_run_repl_prints_startup_upgrade_command_when_available(monkeypatch, capsys):
@@ -630,7 +632,7 @@ def test_run_repl_prints_startup_upgrade_command_when_available(monkeypatch, cap
     rc = cli.run([])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "REPL [v9.9.9 available] (:h help)" in out
+    assert "REPL [v9.9.9 available] (:h help, :t tutorial)" in out
     assert "uv tool upgrade philcalc" in out
 
 
@@ -681,6 +683,7 @@ def test_handle_repl_commands(monkeypatch, capsys):
     assert cli._handle_repl_command(":linalg") is True
     assert cli._handle_repl_command(":la") is True
     assert cli._handle_repl_command(":tutorial") is True
+    assert cli._handle_repl_command(":t") is True
     assert cli._handle_repl_command(":tour") is True
     assert cli._handle_repl_command(":version") is True
     assert cli._handle_repl_command(":check") is True
@@ -703,16 +706,16 @@ def test_tutorial_command_flow(capsys):
     assert cli._tutorial_command(":next", state) is True
     err = capsys.readouterr().err
     assert "start with :tutorial" in err
-    assert cli._tutorial_command(":tutorial", state) is True
+    assert cli._tutorial_command(":t", state) is True
     out = capsys.readouterr().out
     assert "tutorial mode started" in out
-    assert "step 1/6" in out
+    assert "step 1/7" in out
     assert cli._tutorial_command(":next", state) is True
     out = capsys.readouterr().out
-    assert "step 2/6" in out
+    assert "step 2/7" in out
     assert cli._tutorial_command(":repeat", state) is True
     out = capsys.readouterr().out
-    assert "step 2/6" in out
+    assert "step 2/7" in out
     assert cli._tutorial_command(":done", state) is True
     out = capsys.readouterr().out
     assert "tutorial mode ended" in out
@@ -731,6 +734,16 @@ def test_tutorial_command_additional_branches(capsys):
         assert cli._tutorial_command(":next", state) is True
     out = capsys.readouterr().out
     assert "tutorial complete. use :done to exit tutorial mode" in out
+
+
+def test_run_repl_tutorial_enter_advances(monkeypatch, capsys):
+    inputs = iter([":tutorial", "", ":q"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+    rc = cli.run([])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "step 1/7" in out
+    assert "step 2/7" in out
 
 
 def test_consume_bracket_literal_invalid_start():

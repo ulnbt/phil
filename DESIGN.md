@@ -66,14 +66,14 @@ Exact arithmetic helpers are exposed for terminal workflows (`gcd`, `lcm`, `ispr
 
 - Prompt is `phil>`.
 - Minimal command mode inspired by terminal-first tools:
-  - `:h` or `:help` shows available commands
-  - `?`, `??`, `???` provide progressive help and demo discoverability
-  - `:examples` shows a compact learning set
-  - `:tutorial` / `:tour` starts a guided walkthrough (`:next`, `:repeat`, `:done`)
+  - `:h` or `:help` is strict reference (commands/options/core syntax)
+  - `?`, `??`, `???` provide progressive discoverability (quick start, speed shortcuts, advanced demos)
+  - `:examples` shows runnable, high-signal patterns
+  - `:tutorial` / `:t` / `:tour` starts a guided walkthrough (`Enter`/`:next`, `:repeat`, `:done`)
   - `:ode` prints ODE-specific templates and `dsolve` patterns
   - `:linalg` / `:la` prints linear-algebra templates and matrix solve patterns
   - `:version` shows installed version
-  - interactive startup shows an automatic update badge first (`[latest]`, `[vX.Y.Z available]`, etc.) then `(:h help)`
+  - interactive startup shows an automatic update badge first (`[latest]`, `[vX.Y.Z available]`, etc.) then `(:h help, :t tutorial)`
     and prints `uv tool upgrade philcalc` when an update is available
   - `:update` / `:check` compare current vs latest version and print upgrade command
   - `:q` or `:quit` exits

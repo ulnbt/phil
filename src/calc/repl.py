@@ -31,7 +31,6 @@ def handle_repl_command(
         print(help_text)
         return True
     if expr == "?":
-        print(help_text)
         print(help_chain_text)
         return True
     if expr == "??":
@@ -43,7 +42,7 @@ def handle_repl_command(
     if expr == ":examples":
         print(examples_text)
         return True
-    if expr in {":tutorial", ":tour"}:
+    if expr in {":tutorial", ":t", ":tour"}:
         print(tutorial_text)
         return True
     if expr == ":ode":
@@ -78,15 +77,15 @@ def tutorial_command(
 ) -> bool:
     if state is None:
         return False
-    if expr in {":tutorial", ":tour"}:
+    if expr in {":tutorial", ":t", ":tour"}:
         state["active"] = True
         state["index"] = 0
-        print("tutorial mode started. use :next, :repeat, :done")
+        print("tutorial mode started. use Enter or :next, :repeat, :done")
         print_tutorial_step(state["index"])
         return True
     if expr == ":next":
         if not state.get("active", False):
-            print("hint: start with :tutorial", file=stderr)
+            print("hint: start with :tutorial (or :t)", file=stderr)
             return True
         nxt = state["index"] + 1
         if nxt >= len(tutorial_steps):
@@ -97,7 +96,7 @@ def tutorial_command(
         return True
     if expr == ":repeat":
         if not state.get("active", False):
-            print("hint: start with :tutorial", file=stderr)
+            print("hint: start with :tutorial (or :t)", file=stderr)
             return True
         print_tutorial_step(state["index"])
         return True
@@ -106,7 +105,7 @@ def tutorial_command(
             state["active"] = False
             print("tutorial mode ended")
         else:
-            print("hint: tutorial is not active; use :tutorial", file=stderr)
+            print("hint: tutorial is not active; use :tutorial or :t", file=stderr)
         return True
     return False
 

@@ -81,88 +81,93 @@ HELP_TEXT = (
     f"  {UPDATE_CMD}\n"
     "\n"
     "repl commands:\n"
-    "  :h, :help      show this help\n"
+    "  :h, :help      show strict reference\n"
     "  ?, ??, ???     progressive help chain (discover more features)\n"
     "  :examples      show example expressions\n"
-    "  :tutorial      show guided tour for new users\n"
+    "  :tutorial, :t  show guided tour for new users\n"
     "  :ode           show ODE quick reference and templates\n"
     "  :linalg, :la   show linear algebra quick reference and templates\n"
-    "  :next          next tutorial step (after :tutorial)\n"
+    "  :next          next tutorial step (after :tutorial/:t; Enter also works)\n"
     "  :repeat        repeat current tutorial step\n"
     "  :done          exit tutorial mode\n"
     "  :v, :version   show version\n"
     "  :update, :check  check current vs latest version\n"
     "  :q, :quit, :x  quit\n"
     "\n"
-    "quick examples:\n"
-    "  (1 - 25e^5)e^{-5t} + (25e^5 - 1)t e^{-5t} + t e^{-5t} ln(t)\n"
-    "  10^100000 + 1 - 10^100000\n"
-    "  sin^2(x) + cos^2(x)\n"
-    "  msolve(Matrix([[2,1],[1,3]]), Matrix([1,2]))\n"
-    "  d(x^3 + 2*x, x)\n"
-    "  int(sin(x), x)\n"
-    "  solve(x^2 - 4, x)\n"
-    "  gcd(8, 12), lcm(8, 12), factorint(84), num(3/14), den(3/14)\n"
-    "  N(pi, 20)"
+    "reference:\n"
+    "  calculus: d(expr, var), int(expr, var)\n"
+    "  equations: solve(expr, var), Eq(lhs, rhs)\n"
+    "  exact helpers: gcd, lcm, isprime, factorint, num, den\n"
+    "  linear algebra: linalg solve A=[[...]] b=[...], linalg rref A=[[...]]\n"
+    "  ODE shortcut: ode y' = y, y(0)=1\n"
+    "  runnable patterns: :examples\n"
+    "  guided onboarding: :tutorial or :t"
 )
 HELP_CHAIN_TEXT = (
     "help chain:\n"
-    "  ?    = standard help\n"
-    "  ??   = power-user shortcuts\n"
-    "  ???  = capability demos\n"
+    "  ?    = quick start (what to do first)\n"
+    "  ??   = speed shortcuts (faster workflows)\n"
+    "  ???  = advanced capability demos\n"
+    "\n"
+    "quick start:\n"
+    "  onboarding: :tutorial (or :t)\n"
+    "  command reference: :h\n"
+    "  runnable patterns: :examples\n"
+    "  try now: int(sinx), solve(x^2 - 4 = 0, x), linalg solve A=[[2,1],[1,3]] b=[1,2]\n"
+    "  if you get E:, read the hint: line and retry\n"
 )
 HELP_POWER_TEXT = (
     "power-user shortcuts:\n"
-    "  use inline REPL options: --latex d(x^2, x)\n"
-    "  inspect parser rewrites: --explain-parse 'sinx'\n"
-    "  machine-readable output: --format json 'sinx'\n"
-    "  fast ODE solve alias: ode y' = y, y(0)=1\n"
-    "  coefficient symbols inline: S('A'), S('B'), S('C')\n"
-    "  session memory: ans + 1, A = Matrix([[1,2],[3,4]])\n"
-    "hint: try ??? for capability demos"
+    "  parse visibility: --explain-parse 'sinx'\n"
+    "  machine output: --format json 'sinx'\n"
+    "  inline REPL flags: --latex d(x^2, x)\n"
+    "  session memory: ans + 1\n"
+    "  quick aliases: :t (tutorial), :la (linalg)\n"
+    "  version/update check: :version, :check\n"
+    "hint: try ??? for advanced demos"
 )
 HELP_DEMO_TEXT = (
     "capability demos:\n"
     "  exact huge integer arithmetic:\n"
     "    10^100000 + 1 - 10^100000\n"
-    "    -> 1\n"
-    "  exact rational arithmetic:\n"
-    "    1/3 + 1/6\n"
-    "    -> 1/2\n"
-    "  symbolic workflow:\n"
-    "    d(x^3 + 2*x, x), int(sin(x), x), solve(x^2 - 4, x)\n"
-    "  exact integer helpers:\n"
-    "    gcd(8, 12), lcm(8, 12), factorint(84), isprime(101)\n"
+    "  symbolic coefficient matching:\n"
+    "    solve(2*x^2 + 43*x + 22 - (S('A')*(x - 7)^2 + S('B')*(x + 8)*(x - 7) + S('C')*(x + 8)), (S('A'), S('B'), S('C')))\n"
+    "  long symbolic expression normalization:\n"
+    "    (854/2197)e^{8t} + (1343/2197)e^{-5t} + ((9/26)t^2 - (9/169)t)e^{8t}\n"
+    "  explicit ODE solve form:\n"
+    "    dsolve(Eq(f(t).diff(t), f(t)), f(t))\n"
+    "  symbolic linear system:\n"
+    "    linsolve((Eq(2*x + y, 1), Eq(x + 3*y, 2)), (x, y))\n"
 )
 EXAMPLES_TEXT = (
     "examples:\n"
-    "  1/3 + 1/6\n"
-    "  10^100000 + 1 - 10^100000\n"
-    "  sin^2(x) + cos^2(x)\n"
-    "  msolve(Matrix([[2,1],[1,3]]), Matrix([1,2]))\n"
-    "  d(x^3 + 2*x, x)\n"
-    "  int(sin(x), x)\n"
-    "  solve(x^2 - 4, x)\n"
-    "  gcd(8, 12)\n"
-    "  lcm(8, 12)\n"
-    "  factorint(84)\n"
-    "  num(3/14)\n"
-    "  den(3/14)\n"
-    "  solve(2*x^2+43*x+22-(S('A')*(x-7)^2+S('B')*(x+8)*(x-7)+S('C')*(x+8)), (S('A'), S('B'), S('C')))\n"
-    "  (854/2197)e^{8t}+(1343/2197)e^{-5t}+((9/26)t^2 -(9/169)t)e^{8t}\n"
-    "  dsolve(Eq(f(t).diff(t), f(t)), f(t))\n"
-    "  N(pi, 20)"
+    "  exact arithmetic:\n"
+    "    10^10000 + 1 - 10^10000\n"
+    "    gcd(8, 12)\n"
+    "    factorint(84)\n"
+    "    num(3/14)\n"
+    "    den(3/14)\n"
+    "  symbolic calculus/algebra:\n"
+    "    int(sinx)\n"
+    "    d(x^3 + 2*x, x)\n"
+    "    solve(x^2 - 4 = 0, x)\n"
+    "  systems + ODE:\n"
+    "    linalg solve A=[[2,1],[1,3]] b=[1,2]\n"
+    "    ode y' = y, y(0)=1\n"
+    "  numeric representation:\n"
+    "    N(1/7, 20)"
 )
 TUTORIAL_TEXT = (
     "guided tour:\n"
-    "  1) Start: phil '2+2'\n"
-    "  2) Core ops: phil 'd(x^3 + 2*x, x)' / phil 'int(sin(x), x)' / phil 'solve(x^2 - 4, x)'\n"
-    "  3) REPL: phil, then try d(x^2, x), A=Matrix([[1,2],[3,4]]), det(A), ans+1\n"
-    "  4) ODE input: dy/dx = y ; y' = y ; \\frac{dy}{dx} = y\n"
-    "  5) Solve ODE: dsolve(Eq(d(y(x), x), y(x)), y(x))\n"
-    "  6) LaTeX style: $d(x^2, x)$ ; \\sin(x)^2 + \\cos(x)^2\n"
-    "  7) Exactness demo: phil '10^100000 + 1 - 10^100000'\n"
-    "  8) Use :examples and ? / ?? / ??? for more patterns\n"
+    "  controls: Enter or :next, :repeat, :done\n"
+    "  first-minute path:\n"
+    "    1) int(sinx)\n"
+    "    2) 10^10000 + 1 - 10^10000\n"
+    "    3) solve(x^2 - 4 = 0, x)\n"
+    "    4) linalg solve A=[[2,1],[1,3]] b=[1,2]\n"
+    "    5) ode y' = y, y(0)=1\n"
+    "    6) N(1/7, 20)\n"
+    "    7) recovery: gcd(8) -> gcd(8, 12)\n"
     "full tutorial: TUTORIAL.md"
 )
 ODE_TEXT = (
@@ -205,12 +210,13 @@ LINALG_TEXT = (
     "  msolve(A, b) expects square, invertible A for LUsolve\n"
 )
 TUTORIAL_STEPS = (
-    "step 1/6\n  run: 1/3 + 1/6\n  expect: 1/2",
-    "step 2/6\n  run: d(x^3 + 2*x, x)\n  expect: 3*x**2 + 2",
-    "step 3/6\n  run: int(sin(x), x)\n  expect: -cos(x)",
-    "step 4/6\n  run: dy/dx = y\n  expect: Eq(y(x), Derivative(y(x), x))",
-    "step 5/6\n  run: dsolve(Eq(d(y(x), x), y(x)), y(x))\n  expect: Eq(y(x), C1*exp(x))",
-    "step 6/6\n  run: --latex d(x^2, x)\n  expect: 2 x",
+    "step 1/7\n  run: int(sinx)\n  expect: -cos(x)",
+    "step 2/7\n  run: 10^10000 + 1 - 10^10000\n  expect: 1",
+    "step 3/7\n  run: solve(x^2 - 4 = 0, x)\n  expect: [-2, 2] (list of roots)",
+    "step 4/7\n  run: linalg solve A=[[2,1],[1,3]] b=[1,2]\n  expect: Matrix([[1/5], [3/5]])",
+    "step 5/7\n  run: ode y' = y, y(0)=1\n  expect: y(x) = exp(x)",
+    "step 6/7\n  run: N(1/7, 20)\n  expect: 0.14285714285714285714",
+    "step 7/7\n  run: gcd(8)\n  expect: E: ... and hint: gcd syntax...\n  then run: gcd(8, 12)\n  expect: 4",
 )
 COLOR_MODES = {"auto", "always", "never"}
 ANSI_COLORS = {
@@ -680,7 +686,6 @@ def run(argv: list[str] | None = None) -> int:
     if remaining:
         expr = " ".join(remaining)
         if expr == "?":
-            print(HELP_TEXT)
             print(HELP_CHAIN_TEXT)
             return 0
         if expr == "??":
@@ -698,7 +703,7 @@ def run(argv: list[str] | None = None) -> int:
         if expr in {":linalg", ":la"}:
             print(LINALG_TEXT)
             return 0
-        if expr in {":tutorial", ":tour"}:
+        if expr in {":tutorial", ":t", ":tour"}:
             print(TUTORIAL_TEXT)
             return 0
         if expr in {":v", ":version"}:
@@ -725,7 +730,7 @@ def run(argv: list[str] | None = None) -> int:
 
     startup_update_lines = _repl_startup_update_status_lines()
     startup_badge = f" {startup_update_lines[0]}" if startup_update_lines else ""
-    print(f"{CLI_NAME} v{VERSION} REPL{startup_badge} (:h help)")
+    print(f"{CLI_NAME} v{VERSION} REPL{startup_badge} (:h help, :t tutorial)")
     for line in startup_update_lines[1:]:
         print(line)
     if not _configure_repl_line_editing() and sys.stdin.isatty():
@@ -746,9 +751,13 @@ def run(argv: list[str] | None = None) -> int:
     expr: str | None = None
     while True:
         try:
-            expr = input(PROMPT).strip()
+            raw = input(PROMPT)
+            expr = raw.strip()
             if not expr:
-                continue
+                if tutorial_state.get("active", False):
+                    expr = ":next"
+                else:
+                    continue
             if _tutorial_command(expr, tutorial_state):
                 continue
             if _handle_repl_command(expr, color_mode=repl_color_mode):
