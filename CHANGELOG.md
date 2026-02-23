@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.2.6 - 2026-02-23
+
+- Add symbolic-first growth guardrails for huge integer powers, exponent towers, and large factorial inputs.
+- Keep cancellable large expressions fast and exact while failing non-cancellable growth paths quickly with actionable hints.
+- Improve ambiguity recovery guidance:
+  - reject ambiguous trig shorthand like `sin x^2` with explicit rewrite options,
+  - clarify unary-minus power precedence (`-2^2` vs `(-2)^2`) via parse explanation hints.
+- Suppress WolframAlpha fallback hints for deterministic local guardrail failures.
+- Expand regression coverage for guardrail behavior and one-shot/REPL parity.
+
+## 0.2.5 - 2026-02-23
+
+- Refine onboarding UX split:
+  - `:h` is strict reference,
+  - `?` is quick-start guidance,
+  - `??` is speed shortcuts,
+  - `???` is advanced demos.
+- Curate `:examples` to runnable high-signal patterns for exact arithmetic, symbolic basics, linalg/ODE, and numeric representation.
+- Add tutorial shortcut alias `:t` and allow `Enter` to advance tutorial steps while active.
+- Update tutorial/help docs to match the first-minute walkthrough flow.
+
 ## 0.2.4 - 2026-02-23
 
 - Add exact arithmetic helpers to the default namespace: `gcd`, `lcm`, `isprime`, `factorint`, `num`, `den`.

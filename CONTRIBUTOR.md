@@ -82,6 +82,18 @@ If your change adds behavior, add/adjust tests in the correct category.
 
 Releases are automated through GitHub Actions + PyPI trusted publishing.
 
+Before tagging, update release notes draft files:
+
+- `release-notes/v0.3.0-draft.md`
+- `release-notes/v0.4.0-draft.md`
+- `release-notes/TEMPLATE.md` for future versions
+
+Optional helper to print the final GitHub Release body for a draft:
+
+```bash
+scripts/release_notes.sh 0.3.0 --body
+```
+
 Create and push a tag:
 
 ```bash
@@ -100,6 +112,7 @@ Then confirm:
 
 - workflow success in GitHub Actions
 - new version appears on PyPI (`philcalc`)
+- GitHub Release notes match the current draft for that version
 
 ## Adding or Changing Math Operations
 
@@ -114,12 +127,15 @@ Then confirm:
 - Do not loosen parser globals in `GLOBAL_DICT`.
 - Keep blocked-token and input-size protections unless there is a measured reason.
 - Never execute user input outside SymPy parse/eval path.
+- Keep growth guardrails intact for huge powers/towers/factorials; do not remove symbolic-first defer behavior.
+- For new guardrails, preserve one-shot/REPL parity and keep errors in `E:` + `hint:` form.
 
 ## UX Rules
 
 - Output remains terminal-first and script-friendly.
 - Errors are concise: `E:` + actionable `hint:`.
 - Keep REPL behavior consistent with one-shot mode (`--strict`, `--format`, `--no-simplify`).
+- Ambiguous math input should prefer explicit guidance over silent guessing.
 
 ## Scope Guardrails
 

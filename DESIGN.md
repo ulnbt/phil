@@ -56,6 +56,31 @@ REPL evaluation supports session locals, assignment (`name = expr`), and `ans` f
 Matrix helpers are exposed in the allowed namespace (`Matrix`, `eye`, `zeros`, `ones`, `det`, `inv`, `rank`, `eigvals`, `rref`, `nullspace`, `msolve`, `linsolve`).
 Exact arithmetic helpers are exposed for terminal workflows (`gcd`, `lcm`, `isprime`, `factorint`, `num`, `den`).
 
+## Edge-Case Reliability Policy
+
+`phil` uses a symbolic-first guardrail policy for pathological growth input.
+
+- Parse guardrail path:
+  - Parse with `evaluate=False` first.
+  - Detect dangerous growth patterns in the parsed tree.
+  - Simplify symbolically before any eager numeric materialization.
+- Growth guardrails:
+  - Huge integer powers fail fast unless they cancel symbolically.
+  - Exponent towers that imply huge integer expansion fail fast.
+  - Huge factorial inputs fail fast for literal and computed-integer forms.
+- Recovery UX:
+  - Failures are `E:` + actionable `hint:`.
+  - Deterministic local guardrail failures suppress WolframAlpha fallback hints.
+- One-shot/REPL contract:
+  - One-shot exits non-zero on evaluation error.
+  - REPL stays interactive after errors.
+  - Diagnostic quality is aligned across both modes.
+
+Ambiguity policy (reliability-relevant forms):
+
+- `-2^2` is interpreted as `-(2^2)`; use `(-2)^2` for a negative base.
+- `sin x^2` is rejected as ambiguous; users are prompted to write either `sin(x^2)` or `(sin(x))^2`.
+
 ## Exit-code behavior
 
 - One-shot mode returns `0` on success.

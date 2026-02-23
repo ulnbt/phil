@@ -57,8 +57,17 @@ Project-specific knowledge for contributors.
 - Errors start with `E:`
 - Follow-up guidance via `hint:`
 - Syntax-specific hints exist for common derivative and matrix mistakes.
+- Ambiguous trig shorthand like `sin x^2` is rejected with an explicit disambiguation hint.
 - Reserved-name assignment errors show targeted hints (e.g. `f` → ODE function-notation guidance).
 - WolframAlpha hint is suppressed for reserved-name assignment errors.
+- WolframAlpha hint is also suppressed for deterministic local guardrail failures (huge power/factorial limits).
+
+## Reliability Guardrails
+
+- Guardrail path parses with `evaluate=False` before eager evaluation.
+- Huge integer powers are reduced symbolically first; non-cancellable growth fails fast.
+- Exponent-tower growth cases are bounded by integer exponent limits.
+- Huge factorial inputs fail fast for both literal (`100001!`, `(100001)!`) and computed-integer forms (`factorial(10^10)`).
 
 ## Testing Expectations
 

@@ -197,6 +197,8 @@ For release notifications on GitHub, use "Watch" -> "Custom" -> "Releases only" 
 ## Release
 
 Tagged releases are published to PyPI automatically via GitHub Actions trusted publishing.
+Draft GitHub Release notes live under `release-notes/` and should be finalized at tag time.
+Use `scripts/release_notes.sh <version> --body` to print copy/paste-ready GitHub Release text.
 
 ```bash
 git pull
@@ -233,6 +235,26 @@ Use strict parsing if needed:
 ```bash
 phil --strict '2*x'
 ```
+
+### Reliability and Recovery
+
+`phil` is optimized to recover quickly on pathological input while keeping exact math behavior where possible.
+
+- Cancellable huge expressions stay fast and exact:
+  - `10^10000000000 + 1 - 10^10000000000 -> 1`
+  - `2^(2^20) + 1 - 2^(2^20) -> 1`
+- Non-cancellable growth fails fast with local recovery hints:
+  - `10^10000000000 + 1`
+  - `2^(2^(2^20))`
+  - `100001!`
+  - `factorial(10^10)`
+- Ambiguous high-risk shorthand is rejected with explicit guidance:
+  - `sin x^2` -> use `sin(x^2)` or `(sin(x))^2`
+
+Precedence note:
+
+- `-2^2` is interpreted as `-(2^2)`.
+- Use `(-2)^2` if you want the negative base squared.
 
 ## Examples
 
