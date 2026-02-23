@@ -176,6 +176,32 @@ def test_no_simplify_mode():
     assert "cos(x)**2" in out
 
 
+def test_cancellable_huge_integer_power_returns_one():
+    assert str(evaluate("10^100000 + 1 - 10^100000")) == "1"
+
+
+def test_ultra_huge_integer_power_cancellation_returns_fast_and_exact():
+    assert str(evaluate("10^10000000000 + 1 - 10^10000000000")) == "1"
+
+
+def test_non_cancellable_ultra_huge_integer_power_fails_fast():
+    with pytest.raises(ValueError, match="integer power too large to evaluate exactly"):
+        evaluate("10^10000000000 + 1")
+
+
+@pytest.mark.parametrize(
+    "expr",
+    [
+        "10^(10000000000) + 1",
+        "(10)^10000000000 + 1",
+        "10^(-10000000000) + 1",
+    ],
+)
+def test_non_cancellable_ultra_huge_integer_power_variants_fail_fast(expr: str):
+    with pytest.raises(ValueError, match="integer power too large to evaluate exactly"):
+        evaluate(expr)
+
+
 def test_blocks_import_injection():
     with pytest.raises(ValueError, match="blocked token"):
         evaluate('__import__("os").system("echo bad")')

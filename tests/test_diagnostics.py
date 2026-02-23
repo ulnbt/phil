@@ -3,6 +3,12 @@ import calc.diagnostics as diagnostics
 
 def test_should_print_wolfram_hint_policy():
     assert diagnostics.should_print_wolfram_hint(ValueError("cannot assign reserved name: f")) is False
+    assert (
+        diagnostics.should_print_wolfram_hint(
+            ValueError("integer power too large to evaluate exactly (max exponent 1000000)")
+        )
+        is False
+    )
     assert diagnostics.should_print_wolfram_hint(ValueError("different error")) is True
 
 
@@ -55,4 +61,8 @@ def test_hint_for_error_additional_branches():
     assert "den syntax" in diagnostics.hint_for_error(
         "_den() missing 1 required positional argument: 'expr'",
         expr="den()",
+    )
+    assert "power too large to expand exactly" in diagnostics.hint_for_error(
+        "integer power too large to evaluate exactly (max exponent 1000000)",
+        expr="10^10000000000 + 1",
     )

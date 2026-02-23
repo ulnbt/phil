@@ -5,13 +5,17 @@ from difflib import get_close_matches
 
 from sympy import (
     Abs,
+    Add,
+    Dummy,
     E,
     Eq,
     Float,
     Function,
     Integer,
     Matrix,
+    Mul,
     N,
+    Pow,
     Rational,
     Symbol,
     cos,
@@ -127,8 +131,11 @@ LOCALS_DICT = {
 # parse_expr internally uses eval. Keep globals minimal and disable builtins.
 GLOBAL_DICT = {
     "__builtins__": {},
+    "Add": Add,
     "Integer": Integer,
     "Float": Float,
+    "Mul": Mul,
+    "Pow": Pow,
     "Rational": Rational,
     "Symbol": Symbol,
     "factorial": factorial,
@@ -163,6 +170,7 @@ LATEX_SQRT_PATTERN = re.compile(r"\\sqrt\s*\{([^{}]+)\}")
 PRIME_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})")
 PRIME_AT_POINT_PATTERN = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)\s*('{1,4})\s*\(\s*([^()]+?)\s*\)")
 BARE_FUNC_ARG_PATTERN = re.compile(r"\b(sin|cos|tan)([xyzt])\b")
+MAX_INTEGER_POWER_EXP = 1_000_000
 
 
 def _dependent_expr(dep: str, var: str) -> str:
@@ -370,6 +378,56 @@ def _evaluate_parsed(parsed, simplify_output: bool):
     return parsed
 
 
+def _is_huge_integer_power(node) -> bool:
+    if not isinstance(node, Pow):
+        return False
+    if not (node.base.is_Integer and node.exp.is_Integer):
+        return False
+    try:
+        return abs(int(node.exp)) > MAX_INTEGER_POWER_EXP
+    except Exception:
+        return False
+
+
+def _reduce_huge_integer_powers(parsed):
+    if not hasattr(parsed, "atoms"):
+        return None
+    huge_powers = sorted((p for p in parsed.atoms(Pow) if _is_huge_integer_power(p)), key=str)
+    if not huge_powers:
+        return None
+
+    placeholders = {pow_expr: Dummy(f"_phil_huge_pow_{i}") for i, pow_expr in enumerate(huge_powers)}
+    reduced = simplify(parsed.xreplace(placeholders))
+    if any(placeholder in reduced.free_symbols for placeholder in placeholders.values()):
+        raise ValueError(
+            f"integer power too large to evaluate exactly (max exponent {MAX_INTEGER_POWER_EXP})"
+        )
+    return reduced
+
+
+def _parse_with_guardrails(expr: str, *, local_dict, transformations):
+    # Parse safely first so huge integer powers stay symbolic and can be reduced
+    # before any eager bigint materialization.
+    parsed_safe = parse_expr(
+        expr,
+        local_dict=local_dict,
+        global_dict=GLOBAL_DICT,
+        transformations=transformations,
+        evaluate=False,
+    )
+    reduced = _reduce_huge_integer_powers(parsed_safe)
+    if reduced is not None:
+        return reduced
+
+    return parse_expr(
+        expr,
+        local_dict=local_dict,
+        global_dict=GLOBAL_DICT,
+        transformations=transformations,
+        evaluate=True,
+    )
+
+
 def evaluate(
     expression: str,
     relaxed: bool = False,
@@ -388,12 +446,10 @@ def evaluate(
         name, rhs = match.group(1), match.group(2)
         if name in LOCALS_DICT:
             raise ValueError(f"cannot assign reserved name: {name}")
-        parsed_rhs = parse_expr(
+        parsed_rhs = _parse_with_guardrails(
             rhs,
             local_dict=local_dict,
-            global_dict=GLOBAL_DICT,
             transformations=transforms,
-            evaluate=True,
         )
         result = _evaluate_parsed(parsed_rhs, simplify_output=simplify_output)
         if session_locals is not None:
@@ -401,12 +457,10 @@ def evaluate(
             session_locals["ans"] = result
         return result
 
-    parsed = parse_expr(
+    parsed = _parse_with_guardrails(
         normalized,
         local_dict=local_dict,
-        global_dict=GLOBAL_DICT,
         transformations=transforms,
-        evaluate=True,
     )
     result = _evaluate_parsed(parsed, simplify_output=simplify_output)
     if session_locals is not None:

@@ -266,6 +266,54 @@ def test_cli_exact_helper_errors_include_recovery_hints():
         assert f"hint: {expected_hint}" in proc.stderr
 
 
+def test_cli_ultra_huge_power_cancellation_returns_one():
+    proc = run_cli("10^10000000000 + 1 - 10^10000000000")
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "1"
+    assert "E:" not in proc.stderr
+
+
+def test_cli_non_cancellable_ultra_huge_power_fails_fast_with_hint():
+    proc = run_cli("10^10000000000 + 1")
+    assert proc.returncode == 1
+    assert "E: integer power too large to evaluate exactly" in proc.stderr
+    assert "hint: power too large to expand exactly" in proc.stderr
+    assert "hint: try WolframAlpha:" not in proc.stderr
+
+
+@pytest.mark.parametrize(
+    "expr",
+    [
+        "10^(10000000000) + 1",
+        "(10)^10000000000 + 1",
+        "10^(-10000000000) + 1",
+    ],
+)
+def test_cli_non_cancellable_ultra_huge_power_variants_fail_fast(expr: str):
+    proc = run_cli(expr)
+    assert proc.returncode == 1
+    assert "E: integer power too large to evaluate exactly" in proc.stderr
+    assert "hint: power too large to expand exactly" in proc.stderr
+    assert "hint: try WolframAlpha:" not in proc.stderr
+
+
+def test_cli_and_repl_parity_for_non_cancellable_ultra_huge_power_error():
+    one_shot = run_cli("10^10000000000 + 1")
+    repl = subprocess.run(
+        [sys.executable, "-m", "calc"],
+        input="10^10000000000 + 1\n:q\n",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert one_shot.returncode == 1
+    assert "E: integer power too large to evaluate exactly" in one_shot.stderr
+    assert "hint: power too large to expand exactly" in one_shot.stderr
+    assert repl.returncode == 0
+    assert "E: integer power too large to evaluate exactly" in repl.stderr
+    assert "hint: power too large to expand exactly" in repl.stderr
+
+
 def test_cli_relaxed_sinx_shows_interpretation_hint():
     proc = run_cli("sinx")
     assert proc.returncode == 0

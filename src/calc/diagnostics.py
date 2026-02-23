@@ -9,6 +9,8 @@ def should_print_wolfram_hint(exc: Exception) -> bool:
     text = str(exc).lower()
     if "cannot assign reserved name" in text:
         return False
+    if "integer power too large to evaluate exactly" in text:
+        return False
     return True
 
 
@@ -141,6 +143,11 @@ def hint_for_error(message: str, expr: str | None = None, session_locals: dict |
             return "matrix syntax: Matrix([[1,2],[3,4]])"
     if "blocked token" in text:
         return "remove blocked patterns like '__', ';', or newlines"
+    if "integer power too large to evaluate exactly" in text:
+        return (
+            "power too large to expand exactly; simplify to cancel first "
+            "(for example 10^N + 1 - 10^N), or use a smaller exponent"
+        )
     if "empty expression" in text:
         return "enter a math expression, or use :examples"
     return None
