@@ -1,12 +1,117 @@
 # phil Guided Tour
 
-This is a step-by-step tour. Copy each command, run it, and compare with the expected output before moving on.
+Use this as a fast first-run walkthrough. Each step is copy/paste-ready.
 
-## Stop 1: Install and first answer
+## Controls
+
+In REPL tutorial mode:
+
+- `Enter` or `:next` moves to the next step
+- `:repeat` shows the current step again
+- `:done` exits tutorial mode
+
+Start tutorial mode:
 
 ```bash
-uv tool install philcalc
-phil '2+2'
+phil
+```
+
+```text
+phil> :tutorial
+```
+
+Shortcut:
+
+```text
+phil> :t
+```
+
+## First-Minute Sequence
+
+### Step 1: Forgiving Input + Calculus
+
+```text
+int(sinx)
+```
+
+Expected:
+
+```text
+-cos(x)
+```
+
+### Step 2: Exact Huge Integer Arithmetic
+
+```text
+10^10000 + 1 - 10^10000
+```
+
+Expected:
+
+```text
+1
+```
+
+### Step 3: Solve Equation
+
+```text
+solve(x^2 - 4 = 0, x)
+```
+
+Expected:
+
+```text
+[-2, 2]
+```
+
+### Step 4: Linear System Solve
+
+```text
+linalg solve A=[[2,1],[1,3]] b=[1,2]
+```
+
+Expected:
+
+```text
+Matrix([[1/5], [3/5]])
+```
+
+### Step 5: ODE Quick Win
+
+```text
+ode y' = y, y(0)=1
+```
+
+Expected:
+
+```text
+y(x) = exp(x)
+```
+
+### Step 6: Decimal Representation
+
+```text
+N(1/7, 20)
+```
+
+Expected:
+
+```text
+0.14285714285714285714
+```
+
+### Step 7: Recovery from a Mistake
+
+Run this intentionally wrong:
+
+```text
+gcd(8)
+```
+
+You should see `E:` plus a `hint:`. Then fix it:
+
+```text
+gcd(8, 12)
 ```
 
 Expected:
@@ -15,126 +120,8 @@ Expected:
 4
 ```
 
-## Stop 2: Core homework operations
+## Next Commands
 
-Run these one by one:
-
-```bash
-phil '1/3 + 1/6'
-phil '10^100000 + 1 - 10^100000'
-phil 'd(x^3 + 2*x, x)'
-phil 'int(sin(x), x)'
-phil 'solve(x^2 - 4, x)'
-```
-
-Expected shape:
-
-- fraction result (`1/2`)
-- exact huge-integer identity result (`1`)
-- derivative expression (`3*x**2 + 2`)
-- integral expression (`-cos(x)`)
-- roots list (`[-2, 2]`)
-
-## Stop 3: Enter REPL for iterative work
-
-Start:
-
-```bash
-phil
-```
-
-Now type exactly:
-
-```text
-phil> d(x^2, x)
-phil> A = Matrix([[1,2],[3,4]])
-phil> det(A)
-phil> msolve(Matrix([[2,1],[1,3]]), Matrix([1,2]))
-phil> ans + 1
-```
-
-You should see:
-
-- derivative output
-- stored matrix echo
-- determinant (`-2`)
-- solved linear system (`Matrix([[1/5], [3/5]])`)
-- use of `ans` (`Matrix([[6/5], [8/5]])`)
-
-Exit with:
-
-```text
-phil> :q
-```
-
-## Stop 4: Switch output style during work
-
-One-shot mode:
-
-```bash
-phil --latex 'd(x^2, x)'
-phil --format pretty 'Matrix([[1,2],[3,4]])'
-```
-
-Inside REPL, inline flags also work:
-
-```text
-phil> --latex d(x^2, x)
-phil> phil --latex "d(x^2, x)"
-```
-
-## Stop 5: ODE input shortcuts (the important part)
-
-These are equivalent first-order ODE inputs:
-
-```bash
-phil 'dy/dx = y'
-phil "y' = y"
-phil '\frac{dy}{dx} = y'
-```
-
-Second-order style:
-
-```bash
-phil "y'' + y = 0"
-phil '\frac{d^2y}{dx^2} + y = 0'
-```
-
-## Stop 6: Solve an ODE explicitly
-
-```bash
-phil 'dsolve(Eq(d(y(x), x), y(x)), y(x))'
-phil --latex 'dsolve(Eq(d(y(x), x), y(x)), y(x))'
-```
-
-If you see a `dsolve` error, use `y(x)` in both the equation and target function.
-
-## Stop 7: Paste from LaTeX/markdown platforms
-
-These paste-friendly forms are normalized:
-
-```bash
-phil '$d(x^2, x)$'
-phil '\sin(x)^2 + \cos(x)^2'
-phil '\sqrt{x} + \frac{1}{x}'
-```
-
-## Stop 8: When stuck
-
-In one-shot mode:
-
-```bash
-phil :examples
-```
-
-In REPL:
-
-```text
-phil> :h
-phil> ?
-phil> ??
-phil> ???
-phil> :examples
-```
-
-For full command reference, see `/Users/goddess/foundry/sandbox/calc/README.md`.
+- Strict reference: `:h`
+- Runnable patterns: `:examples`
+- Progressive discovery: `?`, `??`, `???`
