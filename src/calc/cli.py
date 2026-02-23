@@ -502,19 +502,22 @@ def _print_update_status() -> None:
 
 
 def _print_repl_startup_update_status() -> None:
+    for line in _repl_startup_update_status_lines():
+        print(line)
+
+
+def _repl_startup_update_status_lines() -> list[str]:
     # Only auto-check when actually interactive to avoid noisy/non-deterministic
     # behavior in piped/scripted REPL sessions.
     if not sys.stdin.isatty():
-        return
+        return []
     latest = None if VERSION == "dev" else _latest_pypi_version()
-    lines = repl_startup_update_status_lines(
+    return repl_startup_update_status_lines(
         VERSION,
         latest,
         UPDATE_CMD,
         compare_fn=_compare_versions,
     )
-    for line in lines:
-        print(line)
 
 
 def _parse_options(args: list[str]) -> CLIOptions:
@@ -712,14 +715,17 @@ def run(argv: list[str] | None = None) -> int:
             _print_error(exc, expr, color_mode=color_mode)
             return 1
 
-    print(f"{CLI_NAME} v{VERSION} REPL. :h help, :q quit, Ctrl-D exit.")
+    startup_update_lines = _repl_startup_update_status_lines()
+    startup_badge = f" {startup_update_lines[0]}" if startup_update_lines else ""
+    print(f"{CLI_NAME} v{VERSION} REPL{startup_badge}")
+    for line in startup_update_lines[1:]:
+        print(line)
     if not _configure_repl_line_editing() and sys.stdin.isatty():
         print(
             "hint: line editing unavailable (arrow keys/history may print escape codes); "
             "install Python readline support",
             file=sys.stderr,
         )
-    _print_repl_startup_update_status()
     session_locals: dict = {}
     repl_format_mode = format_mode
     repl_relaxed = relaxed

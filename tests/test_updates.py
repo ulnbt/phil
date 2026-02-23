@@ -79,24 +79,24 @@ def test_update_status_lines_branches():
 def test_repl_startup_update_status_lines_branches():
     cmd = "uv tool upgrade philcalc"
     assert updates.repl_startup_update_status_lines("dev", "1.2.3", cmd) == [
-        "startup update check: dev (local checkout)"
+        "[dev build]"
     ]
     assert updates.repl_startup_update_status_lines("1.2.3", None, cmd) == [
-        "startup update check: latest version unavailable"
+        "[latest unavailable]"
     ]
     assert updates.repl_startup_update_status_lines("1.2.3", "1.2.3", cmd) == [
-        "startup update check: v1.2.3 is up to date"
+        "[latest]"
     ]
     assert updates.repl_startup_update_status_lines("1.2.3", "1.2.4", cmd) == [
-        "startup update check: v1.2.4 available (you have v1.2.3)",
-        f"update with: {cmd}",
+        "[v1.2.4 available]",
+        cmd,
     ]
     assert updates.repl_startup_update_status_lines("1.2.4", "1.2.3", cmd) == [
-        "startup update check: v1.2.4 is newer than latest release v1.2.3"
+        "[ahead of v1.2.3]"
     ]
     assert updates.repl_startup_update_status_lines(
         "1.2.3",
         "1.2.4",
         cmd,
         compare_fn=lambda a, b: None,
-    ) == ["startup update check: version comparison unavailable"]
+    ) == ["[latest unverified]"]

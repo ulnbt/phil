@@ -72,7 +72,8 @@ Matrix helpers are exposed in the allowed namespace (`Matrix`, `eye`, `zeros`, `
   - `:ode` prints ODE-specific templates and `dsolve` patterns
   - `:linalg` / `:la` prints linear-algebra templates and matrix solve patterns
   - `:version` shows installed version
-  - interactive startup prints automatic update status
+  - interactive startup appends an automatic update badge (`[latest]`, `[vX.Y.Z available]`, etc.)
+    and prints `uv tool upgrade philcalc` when an update is available
   - `:update` / `:check` compare current vs latest version and print upgrade command
   - `:q` or `:quit` exits
 - Errors are terse and prefixed with `E:`.

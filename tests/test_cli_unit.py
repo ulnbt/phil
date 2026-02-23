@@ -462,7 +462,7 @@ def test_print_repl_startup_update_status_up_to_date(monkeypatch, capsys):
     monkeypatch.setattr(cli, "_latest_pypi_version", lambda: "1.2.3")
     cli._print_repl_startup_update_status()
     out = capsys.readouterr().out
-    assert "up to date" in out
+    assert "[latest]" in out
 
 
 def test_print_repl_startup_update_status_update_available(monkeypatch, capsys):
@@ -471,8 +471,8 @@ def test_print_repl_startup_update_status_update_available(monkeypatch, capsys):
     monkeypatch.setattr(cli, "_latest_pypi_version", lambda: "2.0.0")
     cli._print_repl_startup_update_status()
     out = capsys.readouterr().out
-    assert "available" in out
-    assert "update with:" in out
+    assert "[v2.0.0 available]" in out
+    assert "uv tool upgrade philcalc" in out
 
 
 def test_print_repl_startup_update_status_local_prerelease_newer(monkeypatch, capsys):
@@ -481,8 +481,8 @@ def test_print_repl_startup_update_status_local_prerelease_newer(monkeypatch, ca
     monkeypatch.setattr(cli, "_latest_pypi_version", lambda: "0.1.10")
     cli._print_repl_startup_update_status()
     out = capsys.readouterr().out
-    assert "is newer than latest release" in out
-    assert "update with:" not in out
+    assert "[ahead of v0.1.10]" in out
+    assert "uv tool upgrade philcalc" not in out
 
 
 def test_calc_version_package_missing(monkeypatch):
@@ -600,17 +600,34 @@ def test_run_repl_empty_then_command(monkeypatch, capsys):
 def test_run_repl_prints_startup_update_status(monkeypatch, capsys):
     inputs = iter([":q"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
-    monkeypatch.setattr(cli, "_print_repl_startup_update_status", lambda: print("startup-status"))
+    monkeypatch.setattr(cli, "_repl_startup_update_status_lines", lambda: ["[startup-status]"])
     rc = cli.run([])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "startup-status" in out
+    assert "phil v" in out
+    assert "[startup-status]" in out
+
+
+def test_run_repl_prints_startup_upgrade_command_when_available(monkeypatch, capsys):
+    inputs = iter([":q"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+    monkeypatch.setattr(
+        cli,
+        "_repl_startup_update_status_lines",
+        lambda: ["[v9.9.9 available]", "uv tool upgrade philcalc"],
+    )
+    rc = cli.run([])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "phil v" in out
+    assert "[v9.9.9 available]" in out
+    assert "uv tool upgrade philcalc" in out
 
 
 def test_run_repl_does_not_print_always_on_update_line(monkeypatch, capsys):
     inputs = iter([":q"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
-    monkeypatch.setattr(cli, "_print_repl_startup_update_status", lambda: None)
+    monkeypatch.setattr(cli, "_repl_startup_update_status_lines", lambda: [])
     rc = cli.run([])
     out = capsys.readouterr().out
     assert rc == 0

@@ -120,8 +120,9 @@ REPL commands:
 - `:update` / `:check` compare current vs latest version and print update command
 - `:q` / `:quit` / `:x` exit
 
-The REPL starts with a short hint line and prints targeted `hint:` messages on common errors.
-On interactive terminals, REPL startup also prints whether your installed version is up to date.
+The REPL starts with `phil vX.Y.Z REPL` and appends a compact startup update badge on interactive terminals (for example, `[latest]` or `[vX.Y.Z available]`).
+When an update is available, startup prints `uv tool upgrade philcalc` on the next line.
+REPL prints targeted `hint:` messages on common errors.
 Unknown `:` commands return a short correction hint.
 Evaluation errors also include: `hint: try WolframAlpha: <url>`.
 Complex expressions also print a WolframAlpha equivalent hint after successful evaluation.

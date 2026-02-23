@@ -92,18 +92,18 @@ def repl_startup_update_status_lines(
     compare_fn=compare_versions,
 ) -> list[str]:
     if version == "dev":
-        return ["startup update check: dev (local checkout)"]
+        return ["[dev build]"]
     if latest is None:
-        return ["startup update check: latest version unavailable"]
+        return ["[latest unavailable]"]
 
     relation = compare_fn(version, latest)
     if relation == 0 or latest == version:
-        return [f"startup update check: v{version} is up to date"]
+        return ["[latest]"]
     if relation == -1:
         return [
-            f"startup update check: v{latest} available (you have v{version})",
-            f"update with: {update_cmd}",
+            f"[v{latest} available]",
+            update_cmd,
         ]
     if relation == 1:
-        return [f"startup update check: v{version} is newer than latest release v{latest}"]
-    return ["startup update check: version comparison unavailable"]
+        return [f"[ahead of v{latest}]"]
+    return ["[latest unverified]"]

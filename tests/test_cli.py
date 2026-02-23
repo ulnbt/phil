@@ -348,7 +348,7 @@ def test_repl_help_and_quit():
     )
     assert proc.returncode == 0
     assert "phil v" in proc.stdout
-    assert ":h help" in proc.stdout
+    assert "REPL" in proc.stdout
     assert "help chain:" in proc.stdout
     assert "power-user shortcuts:" in proc.stdout
     assert "capability demos:" in proc.stdout

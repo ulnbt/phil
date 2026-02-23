@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 - 2026-02-23
+
+- Simplify REPL startup banner to `phil vX.Y.Z REPL` with compact update badge status.
+- Show `[latest]` when current and `[vX.Y.Z available]` when an upgrade exists.
+- Print `uv tool upgrade philcalc` on startup when an update is available.
+- Clarify startup fallback badges for unavailable or unverified latest-version checks.
+
 ## 0.2.2 - 2026-02-23
 
 - Improve ODE UX: normalize dependent-variable terms more consistently in `ode ...` input (including forms like `20y` and `d(y, x)`).
