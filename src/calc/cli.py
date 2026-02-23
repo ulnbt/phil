@@ -717,7 +717,7 @@ def run(argv: list[str] | None = None) -> int:
 
     startup_update_lines = _repl_startup_update_status_lines()
     startup_badge = f" {startup_update_lines[0]}" if startup_update_lines else ""
-    print(f"{CLI_NAME} v{VERSION} REPL{startup_badge}")
+    print(f"{CLI_NAME} v{VERSION} REPL{startup_badge} (:h help)")
     for line in startup_update_lines[1:]:
         print(line)
     if not _configure_repl_line_editing() and sys.stdin.isatty():

@@ -604,8 +604,7 @@ def test_run_repl_prints_startup_update_status(monkeypatch, capsys):
     rc = cli.run([])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "phil v" in out
-    assert "[startup-status]" in out
+    assert "REPL [startup-status] (:h help)" in out
 
 
 def test_run_repl_prints_startup_upgrade_command_when_available(monkeypatch, capsys):
@@ -619,8 +618,7 @@ def test_run_repl_prints_startup_upgrade_command_when_available(monkeypatch, cap
     rc = cli.run([])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "phil v" in out
-    assert "[v9.9.9 available]" in out
+    assert "REPL [v9.9.9 available] (:h help)" in out
     assert "uv tool upgrade philcalc" in out
 
 
