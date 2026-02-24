@@ -308,10 +308,6 @@ def _print_error(
 ) -> None:
     print(_style(f"E: {exc}", color="red", stream=sys.stderr, color_mode=color_mode), file=sys.stderr)
     hint = _hint_for_error(str(exc), expr=expr, session_locals=session_locals)
-    
-    #Attempt to get generic function docstring if no preexisting hint
-    if hint == None:
-        hint = _try_get_exception_docstring(exc)
     if hint:
         print(_style(f"hint: {hint}", color="yellow", stream=sys.stderr, color_mode=color_mode), file=sys.stderr)
     if expr and should_print_wolfram_hint(exc):
@@ -523,23 +519,6 @@ def _print_repl_startup_update_status() -> None:
     for line in _repl_startup_update_status_lines():
         print(line)
 
-def _try_get_exception_docstring(exc):
-    # 1. Reach the end of the traceback (where the error actually happened)
-    tb = exc.__traceback__
-    while tb.tb_next:
-        tb = tb.tb_next
-    
-    # 2. Get the frame and the function name
-    frame = tb.tb_frame
-    func_name = frame.f_code.co_name
-    
-    # 3. Check if this name exists in the globals of that frame
-    # and if it is actually a callable function
-    if func_name in frame.f_globals:
-        return frame.f_globals[func_name].__doc__
-    else:
-        return None
-
 
 
 def _repl_startup_update_status_lines() -> list[str]:
@@ -706,7 +685,6 @@ def run(argv: list[str] | None = None) -> int:
     remaining = list(options.remaining)
 
     if remaining:
-        print("Issue: duplicate execution code for command line mode")
         expr = " ".join(remaining)
         if expr == "?":
             print(HELP_CHAIN_TEXT)
