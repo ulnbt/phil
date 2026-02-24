@@ -130,6 +130,9 @@ LOCALS_DICT = {
     "symbols": symbols,
     "S": Symbol,
 }
+import sympy
+LOCALS_DICT.update(vars(sympy))
+
 
 # parse_expr internally uses eval. Keep globals minimal and disable builtins.
 GLOBAL_DICT = {
