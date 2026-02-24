@@ -50,6 +50,7 @@ from sympy.parsing.sympy_parser import (
     function_exponentiation,
     implicit_multiplication_application,
     parse_expr,
+    rationalize, 
 )
 
 x, y, z, t = symbols("x y z t")
@@ -143,13 +144,14 @@ GLOBAL_DICT = {
     "factorial": factorial,
 }
 
-TRANSFORMS = (auto_number, factorial_notation, convert_xor, function_exponentiation)
+TRANSFORMS = (auto_number, factorial_notation, convert_xor, function_exponentiation, rationalize, )
 RELAXED_TRANSFORMS = (
     auto_number,
     factorial_notation,
     convert_xor,
     function_exponentiation,
     implicit_multiplication_application,
+    rationalize, 
 )
 MAX_EXPRESSION_CHARS = 2000
 BLOCKED_PATTERN = re.compile(r"(__|;|\n|\r)")
